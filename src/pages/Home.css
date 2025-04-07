@@ -1,0 +1,103 @@
+.main {
+  text-align: center;
+  position: relative;
+  height: 100vh; /* Fixed typo '100svh' */
+  width: 100%;
+}
+
+.slideshow-container {
+  display: inline-block;
+  position: relative;
+  max-width: 100vw;
+  height: 100%;
+  overflow: hidden;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.slideshow-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0; /* Added to ensure proper positioning */
+  left: 0; /* Added to ensure proper positioning */
+}
+
+.text-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+  padding-top: 20px;
+  width: 100%;
+  color: #fff;
+  position: relative;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  height: 100svh;
+}
+.seeyou {
+  padding-top: 250px;
+}
+.text-box h1 {
+  font-size: 62px;
+  text-transform: uppercase;
+  background-clip: text, border-box;
+  -webkit-text-stroke: 2px white;
+  color: transparent;
+}
+.text-box h1::before {
+  content: attr(data-text);
+  position: absolute;
+  width: 0;
+  height: 100%;
+  color: orange;
+  -webkit-text-stroke: 2px orange;
+  border-right: 2px solid orange;
+  overflow: hidden;
+  animation: animate 6s linear infinite;
+}
+@keyframes animate {
+  0%,
+  10%,
+  100% {
+    width: 0;
+  }
+  70%,
+  90% {
+    width: 355px;
+  }
+}
+
+.text-box p {
+  font-size: 18px;
+  text-transform: uppercase;
+  background-clip: text, border-box;
+  color: rgb(255, 255, 255);
+  padding: 10px;
+}
+
+/* CSS for mobile responsive */
+@media (max-width: 800px) {
+  .text-box h1 {
+    font-size: 40px;
+  }
+  .nav-links ul li {
+    display: block;
+  }
+  .seeyou {
+    padding-top: 20%;
+  }
+  @keyframes animate {
+    0%,
+    10%,
+    100% {
+      width: 0;
+    }
+    70%,
+    90% {
+      width: 229px;
+    }
+  }
+}

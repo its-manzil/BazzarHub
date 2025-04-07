@@ -1,0 +1,62 @@
+.nav {
+	position: fixed;
+	bottom: 0px;
+	width: 400px;
+	height: 70px;
+	background: black;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 60px 50% 20px 50%;
+	z-index: 2;
+	border: none;
+}
+.nav ul {
+	display: flex;
+	width: 350px;
+}
+.nav ul li {
+	position: relative;
+	list-style: none;
+	width: 70px;
+	height: 70px;
+	z-index: 1;
+}
+.nav ul li a {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	width: 100%;
+	text-align: center;
+	font-weight: 500;
+}
+.nav ul li a button {
+	position: relative;
+	display: block;
+	line-height: 55px;
+	font-size: 1.5em;
+	text-align: center;
+	transition: 0.5s;
+	color: white;
+	background: transparent;
+}
+.nav ul li:hover a button {
+	transform: translateY(-25px);
+}
+.nav ul li a .text {
+
+	position: absolute;
+	color: white;
+	font-weight: 400;
+	font-size: 0.75em;
+	letter-spacing: 0.05em;
+	transition: 0.5s;
+	opacity: 0;
+	transform: translateY(0px);
+}
+.nav ul li:hover a .text {
+	opacity: 1;
+	transform: translateY(0px);
+}

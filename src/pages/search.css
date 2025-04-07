@@ -1,0 +1,64 @@
+.search {
+  width: 300px;
+  padding: 10px;
+  border: 2px solid orange;
+  border-radius: 50px;
+  margin-right: 10px;
+}
+.searchForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.Restaurants {
+  padding: 10px;
+  border: 2px solid orange;
+  border-radius: 50px;
+  margin-right: 10px;
+}
+.find {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+}
+.find:hover {
+  background-color: #0056b3;
+}
+@media only screen and (max-width: 600px) {
+  #search {
+    margin-top: 20px;
+  }
+
+  .searchForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search,
+  .Restaurants {
+    width: 90%;
+    padding: 10px;
+    border: 2px solid orange;
+    border-radius: 50px;
+    margin-bottom: 10px;
+  }
+
+  .find {
+    width: 50%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 50px;
+    cursor: pointer;
+    align-items: center;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+}
