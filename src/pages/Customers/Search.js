@@ -11,8 +11,8 @@ function Search() {
           <input
             type="search"
             className="search-input"
-            placeholder="Search restaurant..."
-            aria-label="Search restaurants"
+            placeholder="Search Your Products..."
+            aria-label="Search Your Products"
             required
           />
         </div>

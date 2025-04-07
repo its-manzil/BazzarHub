@@ -1,0 +1,209 @@
+.trending-container {
+  padding: 2rem;
+  margin: 2rem 0;
+  background-color: transparent;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.trending-title {
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; /* Modern font stack */
+  font-size: clamp(1.75rem, 4vw, 2.5rem); /* Responsive font size */
+  font-weight: 700; /* Bold weight */
+  color: white; /* Dark gray color */
+  margin: 0 0 1.5rem 0; /* Bottom margin only */
+  padding-bottom: 0.5rem; /* Space for underline */
+  position: relative; /* For pseudo-element */
+  display: inline-block; /* Contain the underline */
+  line-height: 1.2; /* Optimal line height */
+  letter-spacing: -0.02em; /* Slightly tighter letter spacing */
+}
+
+.trending-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%; /* Underline length */
+  height: 4px;
+  background: linear-gradient(90deg, #ff6b6b, #ff8e53); /* Gradient underline */
+  border-radius: 2px;
+}
+
+/* Animation on hover */
+.trending-title:hover::after {
+  width: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .trending-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .trending-title::after {
+    height: 3px;
+  }
+}
+
+.trending-scroll-container {
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trending-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.trending-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.trending-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #ff7e5f, #feb47b);
+  border-radius: 10px;
+}
+
+.trending-products {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.5rem;
+  width: max-content;
+}
+
+.product-card {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.product-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.product-image-container {
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.1);
+}
+
+.product-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-card:hover .product-overlay {
+  opacity: 1;
+}
+
+.add-to-cart {
+  background: linear-gradient(to right, #ff7e5f, #feb47b);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.add-to-cart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.product-info {
+  padding: 1rem;
+}
+
+.product-name {
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.star {
+  color: #ffc107;
+  font-size: 1rem;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.rating-value {
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ff7e5f;
+  margin: 0.5rem 0 0;
+}
+
+/* Tilt hover effect */
+.product-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.product-card:hover {
+  transform: perspective(1000px) rotateY(10deg) rotateX(-5deg) translateY(-10px) scale(1.02);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .trending-container {
+    padding: 1rem;
+  }
+  
+  .trending-title {
+    font-size: 1.5rem;
+  }
+  
+  .product-card {
+    width: 180px;
+  }
+}

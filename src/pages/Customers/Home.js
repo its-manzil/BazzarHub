@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Nav from "./Nav";
 import "./Home.css";
 import Search from "./Search";
+import Trending from "./Trending";
 function Home() {
   const [counter, setCounter] = useState(0);
   const slides = [
@@ -44,11 +45,14 @@ function Home() {
         <div className="text-box">
           <h1 data-text="BazaarHub">BazaarHub</h1>
           <p>
-          Where Elegance Meets Every Stub. <br />
-          For Those Who Rise Above the Rub.
+          Shop in Grace, <br />
+          Own Your Place.
           </p>
           <div className="seeyou">
             <Search />
+          </div>
+          <div>
+            <Trending/>
           </div>
         </div>
       </div>
