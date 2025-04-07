@@ -7,7 +7,7 @@ import Home from "./pages/Customers/Home";
 import About from "./pages/Customers/About";
 import Contact from "./pages/Customers/Contact";
 import Profile from "./pages/Customers/Profile";
-import Restaurants from "./pages/Customers/Restaurants";
+import Store from "./pages/Customers/Store";
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -34,8 +34,8 @@ const router = createBrowserRouter([
     element: <Profile />,
   },
   {
-    path: "Restaurants",
-    element: <Restaurants />,
+    path: "Store",
+    element: <Store />,
   },
 ]);
 

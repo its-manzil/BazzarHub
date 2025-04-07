@@ -1,24 +1,24 @@
 import React from "react";
 import "./search.css";
+import { FiSearch } from "react-icons/fi";
+
 function Search() {
   return (
-    <div id="search">
-      <form method="get" className="searchForm">
-        <input
-          type="search"
-          className="search"
-          placeholder="Restaurant Name"
-          required
-        />
-        <select id="dropdown" className="Restaurants">
-          <option value="Auto">-Auto-</option>
-          <option value="Birtamod">Birtamod</option>
-          <option value="Damak">Damak</option>
-          <option value="Urlabari">Urlabari</option>
-          <option value="Bhadrapur">Bhadrapur</option>
-          <option value="kakarvita">Kakarvita</option>
-        </select>
-        <button className="find">SEARCH</button>
+    <div className="search-container">
+      <form method="get" className="search-form">
+        <div className="search-input-group">
+          <FiSearch className="search-icon" />
+          <input
+            type="search"
+            className="search-input"
+            placeholder="Search restaurant..."
+            aria-label="Search restaurants"
+            required
+          />
+        </div>
+        <button type="submit" className="search-button">
+          Search
+        </button>
       </form>
     </div>
   );

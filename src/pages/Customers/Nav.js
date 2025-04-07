@@ -1,5 +1,5 @@
 import { IoHome } from "react-icons/io5";
-import { FaHotel, FaAddressBook } from "react-icons/fa";
+import { FaHotel } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { FaBookOpen } from "react-icons/fa6";
 import { MdContactPhone } from "react-icons/md";
@@ -21,11 +21,11 @@ function Nav() {
         </li>
 
         <li className="list active">
-          <Link to="/Restaurants" className="Link">
+          <Link to="/Store" className="Link">
             <button className="icon">
               <FaHotel />
             </button>
-            <button className="text">Restaurants</button>
+            <button className="text">Store</button>
           </Link>
         </li>
 

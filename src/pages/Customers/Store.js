@@ -1,7 +1,7 @@
 import React from "react";
 import Nav from "./Nav";
-import "./restaurants.css";
-function Restaurants() {
+import "./store.css";
+function Store() {
   return (
     <div>
       <Nav />
@@ -10,4 +10,4 @@ function Restaurants() {
   );
 }
 
-export default Restaurants;
+export default Store;

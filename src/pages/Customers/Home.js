@@ -44,8 +44,8 @@ function Home() {
         <div className="text-box">
           <h1 data-text="BazaarHub">BazaarHub</h1>
           <p>
-            Everything's good <br />
-            when it's about food
+          Where Elegance Meets Every Stub. <br />
+          For Those Who Rise Above the Rub.
           </p>
           <div className="seeyou">
             <Search />

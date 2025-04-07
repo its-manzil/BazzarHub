@@ -1,64 +1,76 @@
-.search {
-  width: 300px;
-  padding: 10px;
-  border: 2px solid orange;
-  border-radius: 50px;
-  margin-right: 10px;
+.search-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
-.searchForm {
+
+.search-form {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  gap: 1rem;
+  width: 100%;
 }
-.Restaurants {
-  padding: 10px;
-  border: 2px solid orange;
-  border-radius: 50px;
-  margin-right: 10px;
+
+.search-input-group {
+  position: relative;
+  flex-grow: 1;
 }
-.find {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 1.25rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.search-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #3b82f6;
+  color: white;
   border: none;
-  border-radius: 50px;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
-.find:hover {
-  background-color: #0056b3;
-}
-@media only screen and (max-width: 600px) {
-  #search {
-    margin-top: 20px;
-  }
 
-  .searchForm {
-    display: flex;
+.search-button:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.search-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive styles */
+@media only screen and (max-width: 640px) {
+  .search-form {
     flex-direction: column;
-    align-items: center;
+    gap: 0.75rem;
   }
 
-  .search,
-  .Restaurants {
-    width: 90%;
-    padding: 10px;
-    border: 2px solid orange;
-    border-radius: 50px;
-    margin-bottom: 10px;
-  }
-
-  .find {
-    width: 50%;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: 2px solid #ccc;
-    border-radius: 50px;
-    cursor: pointer;
-    align-items: center;
-  }
-
-  button:hover {
-    background-color: #0056b3;
+  .search-button {
+    width: 100%;
+    padding: 0.75rem;
   }
 }
