@@ -3,11 +3,11 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Profile from "./pages/Profile";
-import Restaurants from "./pages/Restaurants";
+import Home from "./pages/Customers/Home";
+import About from "./pages/Customers/About";
+import Contact from "./pages/Customers/Contact";
+import Profile from "./pages/Customers/Profile";
+import Restaurants from "./pages/Customers/Restaurants";
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
