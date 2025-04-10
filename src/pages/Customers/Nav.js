@@ -30,7 +30,7 @@ function Nav() {
         </li>
 
         <li className="list active">
-          <Link to="/Profile" className="Link">
+          <Link to="/Login" className="Link">
             <button className="icon">
               <CgProfile />
             </button>
