@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
+import Nav from './Nav';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -101,6 +102,8 @@ const Login = () => {
   };
 
   return (
+    <>
+    <Nav/>
     <div className="login-container">
       <div className={`form-container ${isLogin ? 'login' : 'signup'}`}>
         <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
@@ -318,6 +321,7 @@ const Login = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
