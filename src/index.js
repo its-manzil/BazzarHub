@@ -8,6 +8,7 @@ import About from "./pages/Customers/About";
 import Contact from "./pages/Customers/Contact";
 import Profile from "./pages/Customers/Profile";
 import Store from "./pages/Customers/Store";
+import Login from "./pages/Customers/Login";
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "Store",
     element: <Store />,
+  },
+  {
+    path: "Login",
+    element: <Login />,
   },
 ]);
 
