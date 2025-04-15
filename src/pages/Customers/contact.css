@@ -1,57 +1,112 @@
-.cont {
+:root {
+  --primary: #0a66c2;
+  --light: #f9f9f9;
+  --dark: #1a1a1a;
+  --card-bg: #ffffff;
+  --border: #ddd;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+  --font: "Segoe UI", Roboto, sans-serif;
+}
 
-  bottom: 10%;
+.contact-section {
+  background-color: var(--light);
+  min-height: 100vh;
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font);
+}
+
+.contact-card {
+  background: var(--card-bg);
+  width: 100%;
   max-width: 600px;
-  margin: 0 auto;
-  margin-top: 20px;
-  padding: 20px;
-  background-color: transparent;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-h1 {
+  padding: 40px;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 16px var(--shadow);
   text-align: center;
-  position: relative;
 }
 
-form {
-  
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.name,
-.email,
-textarea {
-  text-transform: none;
-  width: 100%;
-  padding: 8px;
+.section-title {
+  font-size: 2rem;
+  color: var(--dark);
   margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   
 }
 
-input[type="submit"] {
-  
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(to right, #ff105f, #ffad06);
-  color: white;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.input-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.input-group input,
+.input-group textarea {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  resize: none;
+  transition: border 0.2s ease-in-out;
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.submit-btn {
+  padding: 12px;
+  background-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: all 8s;
-  
+  transition: background-color 0.3s ease;
 }
 
-input[type="submit"]:hover {
-  background: linear-gradient(to left, #ff105f, #ffad06);
+.submit-btn:hover {
+  background-color: #004a99;
+}
+
+.status-message {
+  margin-top: 20px;
+  color: green;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .contact-card {
+    padding: 25px 20px;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
+  }
 }

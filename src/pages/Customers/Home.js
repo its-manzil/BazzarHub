@@ -4,6 +4,7 @@ import Nav from "./Nav";
 import "./Home.css";
 import Search from "./Search";
 import Trending from "./Trending";
+
 function Home() {
   const [counter, setCounter] = useState(0);
   const slides = [
@@ -45,14 +46,14 @@ function Home() {
         <div className="text-box">
           <h1 data-text="BazaarHub">BazaarHub</h1>
           <p>
-          Shop in Grace, <br />
-          Own Your Place.
+            Shop in Grace, <br />
+            Own Your Place.
           </p>
           <div className="seeyou">
             <Search />
           </div>
           <div>
-            <Trending/>
+            <Trending />
           </div>
         </div>
       </div>
