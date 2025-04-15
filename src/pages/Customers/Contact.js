@@ -3,7 +3,7 @@ import Nav from "./Nav";
 import emailjs from "@emailjs/browser";
 import "./contact.css";
 
-export const Contact = () => {
+const Contact = () => {
   const form = useRef();
   const [submitMessage, setSubmitMessage] = useState("");
 
@@ -16,18 +16,12 @@ export const Contact = () => {
       })
       .then(
         () => {
-          setSubmitMessage(
-            "Thanks for your response, we will get back to you soon."
-          );
-          setTimeout(() => {
-            setSubmitMessage("");
-          }, 6000); // 6 seconds
+          setSubmitMessage("✅ Thank you! Your message has been sent.");
+          setTimeout(() => setSubmitMessage(""), 6000);
         },
-        (error) => {
-          setSubmitMessage("Failed to send mail, please try again.");
-          setTimeout(() => {
-            setSubmitMessage("");
-          }, 6000);
+        () => {
+          setSubmitMessage("❌ Failed to send message. Please try again.");
+          setTimeout(() => setSubmitMessage(""), 6000);
         }
       );
     form.current.reset();
@@ -36,23 +30,33 @@ export const Contact = () => {
   return (
     <>
       <Nav />
-      <div className="cont">
-        <h1>Contact Me</h1>
-        <form ref={form} onSubmit={sendEmail}>
-          <label>Name</label>
-          <input type="text" name="from_name" className="name" required />
-          <label>Email</label>
-          <input type="email" name="from_email" className="email" required />
-          <label>Message</label>
-          <textarea name="message" required />
-          <input type="submit" value="Send" />
-        </form>
-        {submitMessage && (
-          <p style={{ color: "green" }}>
-            <b>{submitMessage}</b>
-          </p>
-        )}
-      </div>
+      <section className="contact-section">
+        <div className="contact-card">
+          <h2 className="section-title">Contact BazaarHub</h2>
+          <p className="section-subtitle">Feel free to reach out by filling the form below.</p>
+
+          <form ref={form} onSubmit={sendEmail} className="contact-form">
+            <div className="input-group">
+              <label htmlFor="from_name">Name</label>
+              <input type="text" id="from_name" name="from_name" required />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="from_email">Email</label>
+              <input type="email" id="from_email" name="from_email" required />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="message">Message</label>
+              <textarea id="message" name="message" rows="5" required />
+            </div>
+
+            <button type="submit" className="submit-btn">Send Message</button>
+          </form>
+
+          {submitMessage && <p className="status-message">{submitMessage}</p>}
+        </div>
+      </section>
     </>
   );
 };
