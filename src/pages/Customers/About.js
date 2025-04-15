@@ -1,40 +1,31 @@
 import React from 'react';
 import Nav from './Nav';
 import './about.css';
+
 function About() {
-	return (
-		<>
-			<Nav />
-			<div className='first'> 
-				<div className='second'>
-					<h1>About Us</h1>
-					<p className='third'>
-						Food is universally loved for its ability to nourish, delight, and
-						bring people together. It satisfies hunger, stimulates senses, and
-						evokes memories, making it a cherished aspect of cultures worldwide.
-					</p>
-				</div>
-				<div className='forth'>
-					<img src="food.jpeg" />
-					<p className='fifth'>
-						Welcome To VokLagyo, Your Go-To Destination For Delightful Dining
-						Experiences In Jhapa, Nepal! At VokLagyo, We Believe That Great Food
-						Should Be Accessible To Everyone, And Our Mission Is To Bring The
-						Culinary Treasures Of Jhapa Right To Your Doorstep. Our Carefully
-						Curated Selection Of Local And International Cuisines Ensures That
-						There's Something For Every Palate. Whether You're Craving
-						Traditional Nepali Flavors Or Exploring Global Tastes, VokLagyo Is
-						Here To Make Your Dining Desires A Reality. With Our Easy-To-Use
-						Platform, Seamless Ordering Process, And Efficient Delivery
-						Services, We Strive To Redefine The Way You Experience Food
-						Delivery. Join Us On A Gastronomic Journey, And Let VokLagyo Be Your
-						Trusted Companion For A Delicious, Hassle-Free Dining Adventure In
-						The Heart Of Nepal. <br /><br /><br /><br /><br />
-					</p>
-				</div>
-			</div>
-		</>
-	);
+  return (
+    <>
+      <Nav />
+      <h1 className="about-heading">About BazaarHub</h1>
+      <section className="split-hero">
+        <div className="hero-text">
+          <h1>
+            Bringing Bazaar Culture to <span className="highlight">Your Fingertips.</span>
+          </h1>
+          <p>
+            At <strong> BazaarHub</strong>, we believe tradition and technology go hand in hand. With just one tap, explore Nepal’s rich culinary culture and support local businesses without stepping out.
+          </p>
+          <p className="secondary-text">
+            Join our mission to empower communities, reduce waste, and serve food with soul. Because a better future starts with better choices today.
+          </p>
+          <button className="hero-btn">Explore BazaarHub</button>
+        </div>
+        <div className="hero-image">
+          <img src="food.jpeg" alt="Delicious food from BazaarHub" />
+        </div>
+      </section>
+    </>
+  );
 }
 
 export default About;
