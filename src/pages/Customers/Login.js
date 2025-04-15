@@ -130,7 +130,7 @@ const Login = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Enter password"
+                  placeholder="Enter your password"
                 />
                 <button 
                   type="button" 
