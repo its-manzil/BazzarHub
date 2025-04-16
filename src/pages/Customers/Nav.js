@@ -16,7 +16,7 @@ function Nav() {
             <button className="icon">
               <IoHome />
             </button>
-            <button className="text">HOME</button>
+            <button className="text">Home</button>
           </Link>
         </li>
 

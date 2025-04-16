@@ -58,7 +58,7 @@ const Contact = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                Visit us on Google Maps
+                Visit BazaarHub
               </a>
             </div>
           </div>

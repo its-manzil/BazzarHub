@@ -21,7 +21,7 @@ function About() {
           <button className="hero-btn"> Explore BazaarHub</button>
         </div>
         <div className="hero-image">
-          <img src="food.jpeg" alt="BazaarHub image" />
+          <img src="/images/eCommerce.jpg" height={400} width={550} alt="BazaarHub image"/>
         </div>
       </section>
     </>
