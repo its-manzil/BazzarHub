@@ -18,10 +18,10 @@ function About() {
           <p className="secondary-text">
             Join our mission to empower communities, reduce waste, and serve food with soul. Because a better future starts with better choices today.
           </p>
-          <button className="hero-btn">Explore BazaarHub</button>
+          <button className="hero-btn"> Explore BazaarHub</button>
         </div>
         <div className="hero-image">
-          <img src="food.jpeg" alt="Delicious food from BazaarHub" />
+          <img src="food.jpeg" alt="BazaarHub image" />
         </div>
       </section>
     </>

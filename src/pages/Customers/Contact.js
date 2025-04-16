@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import Nav from "./Nav";
 import emailjs from "@emailjs/browser";
+import { FaFacebookF, FaInstagram, FaMapMarkerAlt } from "react-icons/fa";
 import "./contact.css";
 
 const Contact = () => {
@@ -30,11 +31,40 @@ const Contact = () => {
   return (
     <>
       <Nav />
-      <section className="contact-section">
-        <div className="contact-card">
-          <h2 className="section-title">Contact BazaarHub</h2>
-          <p className="section-subtitle">Feel free to reach out by filling the form below.</p>
+      <h1 className="contact-heading">Contact BazaarHub</h1>
+      <section className="split-contact">
+        <div className="contact-text">
+          <h1>
+            Let’s <span className="highlight">Talk!</span>
+          </h1>
+          <p>
+            Got questions, feedback, or ideas? We're all ears at <strong>BazaarHub</strong>. Fill out the form and we’ll get back to you soon.
+          </p>
 
+          <div className="social-section">
+            <p className="social-title">Follow us on social media:</p>
+            <div className="social-icons">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
+                <FaFacebookF />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+                <FaInstagram />
+              </a>
+            </div>
+            <div className="map-link">
+              <FaMapMarkerAlt />
+              <a
+                href="https://maps.google.com/?q=Kathmandu,Nepal"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Visit us on Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="contact-form-wrapper">
           <form ref={form} onSubmit={sendEmail} className="contact-form">
             <div className="input-group">
               <label htmlFor="from_name">Name</label>
@@ -51,9 +81,10 @@ const Contact = () => {
               <textarea id="message" name="message" rows="5" required />
             </div>
 
-            <button type="submit" className="submit-btn">Send Message</button>
+            <button type="submit" className="submit-btn">
+              Send Message
+            </button>
           </form>
-
           {submitMessage && <p className="status-message">{submitMessage}</p>}
         </div>
       </section>
