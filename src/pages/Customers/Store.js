@@ -28,7 +28,7 @@ function Store() {
     <>
       <Nav />
       <section className="store-section">
-        <h2 className="store-title">🛒 Welcome to BazaarHub Store</h2>
+        <h1 className="store-title">🛒 Welcome to BazaarHub Store</h1>
 
         <form className="search-bar" onSubmit={(e) => e.preventDefault()}>
           <div className="search-group">
