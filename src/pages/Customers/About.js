@@ -9,7 +9,7 @@ function About() {
       <h1 className="about-heading">About BazaarHub</h1>
       <section className="split-hero">
         <div className="hero-text">
-          <h1>
+          <h1 >
             Bringing Bazaar Culture to <span className="highlight">Your Fingertips.</span>
           </h1>
           <p>
@@ -21,7 +21,7 @@ function About() {
           <button className="hero-btn"> Explore BazaarHub</button>
         </div>
         <div className="hero-image">
-          <img src="/images/eCommerce.jpg" height={400} width={550} alt="BazaarHub image"/>
+          <img src="/images/BazaarHub.png" height={400}width={350} alt="BazaarHub image"/>
         </div>
       </section>
     </>
