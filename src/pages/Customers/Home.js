@@ -4,6 +4,7 @@ import Nav from "./Nav";
 import "./Home.css";
 import Search from "./Search";
 import Trending from "./Trending";
+import Logo from "./Logo"
 
 function Home() {
   const [counter, setCounter] = useState(0);
@@ -28,6 +29,8 @@ function Home() {
   return (
     <div className="main">
       <Nav />
+        <Logo/>
+
 
       <div className="slideshow-container">
         {slides.map((slide, index) => (

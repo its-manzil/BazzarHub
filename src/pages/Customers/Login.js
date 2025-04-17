@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
 import Nav from './Nav';
-
+import Logo from "./Logo"
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -100,6 +100,9 @@ const Login = () => {
   return (
     <>
       <Nav />
+      <Logo />
+      
+      
       <div className="login-container">
         <div className={`form-container ${isLogin ? 'login' : 'signup'}`}>
           <div className="form-content">
@@ -316,7 +319,7 @@ const Login = () => {
             )}
           </div>
           <div className="image-container">
-            <img src="images/BazaarHub.png" alt="Login Illustration" />
+            <img src="images/eCommerce.jpg" height={450} width={350} alt="Login Illustration" />
           </div>
         </div>
       </div>
