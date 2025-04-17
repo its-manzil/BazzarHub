@@ -2,11 +2,14 @@ import React from 'react';
 import Nav from './Nav';
 import './about.css';
 import Logo from "./Logo"
+import CartLogo from "./CartLogo"
+
 function About() {
   return (
     <>
       <Nav />
       <Logo/>
+      <CartLogo/>
       
       <h1 className="about-heading">About BazaarHub</h1>
       

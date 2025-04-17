@@ -1,13 +1,13 @@
-.logo-container {
+.cartlogo-container {
     position: fixed;
-    top: -20px;
-    left: 0px;
+    top: 10px;
+    right: 20px;
     cursor: pointer;
     z-index: 1000;
   }
   
-  .logo-image {
-    width: 100px;
+  .cartlogo-image {
+    width: 50px;
     height: auto;
   }
   

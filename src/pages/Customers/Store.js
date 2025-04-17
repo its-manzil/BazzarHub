@@ -42,11 +42,11 @@ function Store() {
         <div className="store-header-container">
           <div className="store-header">
             <h1 className="store-title">Welcome to BazaarHub Store</h1>
-            <p className="store-subtitle">Discover amazing products at great prices</p>
+            <Search/>
           </div>
 
           <div className="store-controls-sticky">
-            <Search/>
+            
 
             <div className="category-scroll-container">
               <div className="category-bar">
