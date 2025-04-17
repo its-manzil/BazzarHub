@@ -1,12 +1,15 @@
 import React from 'react';
 import Nav from './Nav';
 import './about.css';
-
+import Logo from "./Logo"
 function About() {
   return (
     <>
       <Nav />
+      <Logo/>
+      
       <h1 className="about-heading">About BazaarHub</h1>
+      
       <section className="split-hero">
         <div className="hero-text">
           <h1 >

@@ -3,7 +3,7 @@ import Nav from "./Nav";
 import emailjs from "@emailjs/browser";
 import { FaFacebookF, FaInstagram, FaMapMarkerAlt } from "react-icons/fa";
 import "./contact.css";
-
+import Logo from "./Logo"
 const Contact = () => {
   const form = useRef();
   const [submitMessage, setSubmitMessage] = useState("");
@@ -31,6 +31,7 @@ const Contact = () => {
   return (
     <>
       <Nav />
+      <Logo/>
       <h1 className="contact-heading">Contact BazaarHub</h1>
       <section className="split-contact">
         <div className="contact-text">

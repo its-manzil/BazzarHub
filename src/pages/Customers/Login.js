@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
 import Nav from './Nav';
-
+import Logo from "./Logo"
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -100,6 +100,8 @@ const Login = () => {
   return (
     <>
       <Nav />
+      <Logo />
+      
       
       <div className="login-container">
         <div className={`form-container ${isLogin ? 'login' : 'signup'}`}>
