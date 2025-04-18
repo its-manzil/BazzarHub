@@ -1,10 +1,11 @@
 // store.js
 import React, { useState } from "react";
 import "./store.css";
-import { FiSearch } from "react-icons/fi";
+// import { FiSearch } from "react-icons/fi";
 import Nav from "./Nav";
 import Search from './Search';
 import Logo from "./Logo"
+import CartLogo from "./CartLogo";
 
 const categories = ["All", "Electronics", "Fashion", "Home", "Books", "Grocery"];
 
@@ -38,6 +39,7 @@ function Store() {
     <>
       <Nav />
       <Logo/>
+      <CartLogo/>
       <section className="store-section">
         <div className="store-header-container">
           <div className="store-header">
