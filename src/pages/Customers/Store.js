@@ -1,7 +1,7 @@
 // store.js
 import React, { useState } from "react";
 import "./store.css";
-import { FiSearch } from "react-icons/fi";
+
 import Nav from "./Nav";
 import Search from './Search';
 import Logo from "./Logo"
