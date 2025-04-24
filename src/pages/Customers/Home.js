@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import Nav from "./Nav";
 import "./Home.css";
 import Search from "./Search";
 import Trending from "./Trending";
-import Logo from "./Logo"
+import Logo from "./Logo";
+import CartLogo from "./CartLogo";
 
 function Home() {
   const [counter, setCounter] = useState(0);
+
   const slides = [
     { image: "caption1.jpg", alt: "Image 1" },
     { image: "caption2.jpg", alt: "Image 2" },
@@ -15,22 +17,23 @@ function Home() {
     { image: "caption4.jpg", alt: "Image 4" },
   ];
 
-  useEffect(() => {
-    const interval = setInterval(goNext, 6000);
-    return () => clearInterval(interval);
-  }, [counter]);
-
-  const goNext = () => {
+  // ✅ Memoized goNext to avoid eslint warning
+  const goNext = useCallback(() => {
     setCounter((prevCounter) =>
       prevCounter === slides.length - 1 ? 0 : prevCounter + 1
     );
-  };
+  }, [slides.length]);
+
+  useEffect(() => {
+    const interval = setInterval(goNext, 6000);
+    return () => clearInterval(interval);
+  }, [goNext]);
 
   return (
     <div className="main">
       <Nav />
-        <Logo/>
-
+      <Logo />
+      <CartLogo />
 
       <div className="slideshow-container">
         {slides.map((slide, index) => (

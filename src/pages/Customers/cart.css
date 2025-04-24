@@ -1,0 +1,119 @@
+.cart-heading {
+    text-align: center;
+    font-size: 28px;
+    margin: 30px 0 10px;
+    font-family: "Segoe UI", sans-serif;
+  }
+  
+  .split-cart {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    gap: 40px;
+  }
+  
+  .cart-info {
+    flex: 1;
+    min-width: 280px;
+    background-color: #f4f4f4;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+  
+  .cart-map-info {
+    margin-top: 30px;
+    font-size: 15px;
+  }
+  
+  .cart-map-info a {
+    text-decoration: none;
+    color: #007bff;
+  }
+  
+  .cart-list-wrapper {
+    flex: 2;
+    min-width: 320px;
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+  
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .cart-item-details h3 {
+    margin-bottom: 5px;
+  }
+  
+  .remove-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .remove-btn:hover {
+    background-color: #c0392b;
+  }
+  
+  .cart-footer {
+    margin-top: 20px;
+    text-align: right;
+  }
+  
+  .total-price {
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .cart-action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  
+  .checkout-btn, .continue-btn, .cart-shop-btn {
+    padding: 10px 16px;
+    font-size: 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .checkout-btn {
+    background-color: #27ae60;
+    color: #fff;
+  }
+  
+  .checkout-btn:hover {
+    background-color: #1e8449;
+  }
+  
+  .continue-btn, .cart-shop-btn {
+    background-color: #2980b9;
+    color: #fff;
+  }
+  
+  .continue-btn:hover, .cart-shop-btn:hover {
+    background-color: #1c598c;
+  }
+  
+  .cart-empty {
+    font-size: 18px;
+    text-align: center;
+  }
+  

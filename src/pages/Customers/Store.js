@@ -1,9 +1,11 @@
 // store.js
 import React, { useState } from "react";
 import "./store.css";
+// import { FiSearch } from "react-icons/fi";
 import Nav from "./Nav";
 import Search from './Search';
 import Logo from "./Logo"
+import CartLogo from "./CartLogo";
 
 const categories = ["All", "Electronics", "Fashion", "Home", "Books", "Grocery"];
 
@@ -37,15 +39,16 @@ function Store() {
     <>
       <Nav />
       <Logo/>
+      <CartLogo/>
       <section className="store-section">
         <div className="store-header-container">
           <div className="store-header">
-            <h1 className="store-title">Welcome to BazaarHub Store</h1>
-            <p className="store-subtitle">Discover amazing products at great prices</p>
+            <h1 className="store-title">Welcome 2 BazaarHub Store</h1>
+            <Search/>
           </div>
 
           <div className="store-controls-sticky">
-            <Search/>
+            
 
             <div className="category-scroll-container">
               <div className="category-bar">
