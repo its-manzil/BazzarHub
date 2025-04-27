@@ -4,6 +4,8 @@ import './about.css';
 import Logo from "./Logo"
 import CartLogo from "./CartLogo"
 
+
+
 function About() {
   return (
     <>
