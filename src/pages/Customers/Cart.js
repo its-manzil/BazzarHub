@@ -2,6 +2,7 @@ import React from 'react';
 import Nav from './Nav';
 import Logo from './Logo';
 import './cart.css';
+import CartLogo from './CartLogo';
 import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
@@ -36,6 +37,7 @@ const Cart = () => {
     <>
     <h1 className="cart-heading">Your Cart</h1>
       <Nav />
+      <CartLogo/>
       <div className="cart-wrapper">
         
         <div className="cart-main">

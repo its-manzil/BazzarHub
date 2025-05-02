@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Nav from './Nav';
 import Logo from './Logo';
 import './checkout.css';
+import CartLogo from './CartLogo'
 
 const Checkout = () => {
   const [location, setLocation] = useState('');
@@ -17,6 +18,7 @@ const Checkout = () => {
     <>
       <h1 className="checkout-heading">Checkout</h1>
       <Nav />
+      <CartLogo/>
       <div className="checkout-wrapper">
         <div className="checkout-main">
           <div className="checkout-title">
@@ -70,8 +72,8 @@ const Checkout = () => {
                 {paymentMethod === 'Online Payment' && (
                   <div className="payment-gateway-icons">
                     <img
-                      src="./images/home1.jpg"
-                      alt="PayPal"
+                      src="./images/esewa.png"
+                      alt="esewa"
                       className="payment-icon"
                     />
                     <img
