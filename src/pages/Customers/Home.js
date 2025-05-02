@@ -11,10 +11,10 @@ function Home() {
   const [counter, setCounter] = useState(0);
 
   const slides = [
-    { image: "caption1.jpg", alt: "Image 1" },
-    { image: "caption2.jpg", alt: "Image 2" },
-    { image: "caption3.jpg", alt: "Image 3" },
-    { image: "caption4.jpg", alt: "Image 4" },
+    { image: "./images/home1.jpg", alt: "Image 1" },
+    { image: "./images/home2.jpg", alt: "Image 2" },
+    { image: "./images/home3.jpg", alt: "Image 3" },
+    { image: "./images/home4.jpg", alt: "Image 4" },
   ];
 
   // ✅ Memoized goNext to avoid eslint warning

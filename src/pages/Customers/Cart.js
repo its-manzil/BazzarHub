@@ -1,129 +1,66 @@
-import React from "react";
-import { useNavigate, Link } from "react-router-dom";
-import Nav from "./Nav";
-import Logo from "./Logo";
-import CartLogo from "./CartLogo";
-import "./cart.css";
+import React from 'react';
+import Nav from './Nav';
+import Logo from './Logo';
+import './cart.css';
 
+const Cart = () => {
+  const cartItems = [
+    {
+      id: 1,
+      name: 'Product 1',
+      price: 120,
+      quantity: 2,
+      image: 'https://via.placeholder.com/100',
+    },
+    {
+      id: 2,
+      name: 'Product 2',
+      price: 80,
+      quantity: 1,
+      image: 'https://via.placeholder.com/100',
+    },
+  ];
 
-
-
-function Cart({ cartItems, onRemoveFromCart }) {
-  const navigate = useNavigate();
-
-  const getTotalPrice = () =>
+  const calculateTotal = () =>
     cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const emptyCart = cartItems.length === 0;
+  return (
+    <>
+    <h1 className="cart-heading">Your Cart</h1>
+      <Nav />
+      <div className="cart-wrapper">
+        
+        <div className="cart-main">
+          <div className="cart-title">
+            <Logo />
+          </div>
 
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(Nav),
-    React.createElement(Logo),
-    React.createElement(CartLogo),
+          <div className="cart-box">
+            <div className="cart-items">
+              {cartItems.map((item) => (
+                <div key={item.id} className="cart-item">
+                  <img src={item.image} alt={item.name} className="item-image" />
+                  <div className="item-details">
+                    <h3>{item.name}</h3>
+                    <p>Price: ${item.price}</p>
+                    <p>Quantity: {item.quantity}</p>
+                  </div>
+                  <div className="item-total">
+                    <p>Total: ${item.price * item.quantity}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-    React.createElement(
-      "h1",
-      { className: "cart-heading" },
-      "Your BazaarHub Cart"
-    ),
-
-    React.createElement(
-      "section",
-      { className: "split-cart" },
-
-      // Left Section
-      React.createElement(
-        "div",
-        { className: "cart-info" },
-        React.createElement("h2", null, "🛍️ Items in your Cart"),
-        React.createElement(
-          "p",
-          null,
-          "Here you can review the items you’ve added. Ready to check out or keep shopping? We've got you!"
-        ),
-        React.createElement(
-          "div",
-          { className: "cart-map-info" },
-          React.createElement("p", null, "Want to visit us in person?"),
-          React.createElement(
-            "a",
-            {
-              href: "https://maps.google.com/?q=Kathmandu,Nepal",
-              target: "_blank",
-              rel: "noreferrer",
-            },
-            "📍 BazaarHub Location"
-          )
-        )
-      ),
-
-      // Right Section
-      React.createElement(
-        "div",
-        { className: "cart-list-wrapper" },
-
-        emptyCart
-          ? React.createElement(
-              "p",
-              { className: "cart-empty" },
-              "🛒 Your cart is currently empty.",
-              React.createElement("br"),
-              React.createElement(
-                Link,
-                { to: "/", className: "cart-shop-btn" },
-                "Continue Shopping"
-              )
-            )
-          : [
-              ...cartItems.map((item) =>
-                React.createElement(
-                  "div",
-                  { key: item.id, className: "cart-item" },
-                  React.createElement(
-                    "div",
-                    { className: "cart-item-details" },
-                    React.createElement("h3", null, item.name),
-                    React.createElement("p", null, `Quantity: ${item.quantity}`),
-                    React.createElement("p", null, `Price: $${item.price}`)
-                  ),
-                  React.createElement(
-                    "button",
-                    {
-                      className: "remove-btn",
-                      onClick: () => onRemoveFromCart(item.id),
-                    },
-                    "Remove"
-                  )
-                )
-              ),
-              React.createElement(
-                "div",
-                { className: "cart-footer" },
-                React.createElement("p", { className: "total-price" }, `Total: $${getTotalPrice().toFixed(2)}`),
-                React.createElement(
-                  "div",
-                  { className: "cart-action-buttons" },
-                  React.createElement(
-                    "button",
-                    {
-                      className: "checkout-btn",
-                      onClick: () => navigate("/checkout"),
-                    },
-                    "Proceed to Checkout"
-                  ),
-                  React.createElement(
-                    Link,
-                    { to: "/", className: "continue-btn" },
-                    "Continue Shopping"
-                  )
-                )
-              )
-            ]
-      )
-    )
+            <div className="cart-summary">
+              <h3>Total Amount: ${calculateTotal()}</h3>
+              <button className="checkout-btn">Proceed to Checkout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
-}
+};
 
 export default Cart;

@@ -41,7 +41,7 @@ const Contact = () => {
       <section className="split-contact">
         <div className="contact-text">
           <h1>
-            Let’s <span className="highlight">Talk!</span>
+            Let’s <span className="highlight">Chat!</span>
           </h1>
           <p>
             Got questions, feedback, or ideas? We're all ears at <strong>BazaarHub</strong>. Fill out the form and we’ll get back to you soon.
