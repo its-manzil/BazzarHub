@@ -11,7 +11,7 @@ function Search() {
           <input
             type="search"
             className="search-input"
-            placeholder="Search Your Products..."
+            placeholder="Search for products..."
             aria-label="Search Your Products"
             required
           />
