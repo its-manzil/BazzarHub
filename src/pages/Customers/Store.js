@@ -39,7 +39,7 @@ export default function Store() {
         <Logo />
         <CartLogo />
         <div className="store-header">
-          <h1 className="store-title">Welcome 2 BazaarHub Store</h1>
+          <h1 className="store-title">Welcome to BazaarHub Store</h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </div>
         <div className="store-controls-sticky">
