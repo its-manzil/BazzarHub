@@ -2,8 +2,11 @@ import React from 'react';
 import Nav from './Nav';
 import Logo from './Logo';
 import './cart.css';
+import CartLogo from './CartLogo';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
+    const navigate = useNavigate();
   const cartItems = [
     {
       id: 1,
@@ -23,11 +26,18 @@ const Cart = () => {
 
   const calculateTotal = () =>
     cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  
+    
+  const handleClick = () => {
+    navigate("/Checkout"); 
+  };
+
 
   return (
     <>
     <h1 className="cart-heading">Your Cart</h1>
       <Nav />
+      <CartLogo/>
       <div className="cart-wrapper">
         
         <div className="cart-main">
@@ -54,7 +64,8 @@ const Cart = () => {
 
             <div className="cart-summary">
               <h3>Total Amount: ${calculateTotal()}</h3>
-              <button className="checkout-btn">Proceed to Checkout</button>
+              
+              <button className="checkout-btn" onClick={handleClick}>Proceed to Checkout</button>
             </div>
           </div>
         </div>
