@@ -10,6 +10,8 @@ import Cart from "./pages/Customers/Cart";
 import Store from "./pages/Customers/Store";
 import Login from "./pages/Customers/Login";
 import { createBrowserRouter, RouterProvider, } from "react-router-dom";
+import Checkout from "./pages/Customers/Checkout";
+import Profile from "./pages/Customers/Profile";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
@@ -31,9 +33,18 @@ const router = createBrowserRouter([
     element: <Contact />,
   },
   {
+    path: "Profile",
+    element: <Profile />,
+  },
+  {
     path: "Cart",
     element: <Cart />,
   },
+  {
+    path: "Checkout",
+    element: <Checkout />,
+  },
+  
   {
     path: "Store",
     element: <Store />,

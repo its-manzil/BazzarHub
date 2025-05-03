@@ -199,31 +199,7 @@ const Login = () => {
                     {errors.username && <span className="error">{errors.username}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>User Type*</label>
-                    <div className="user-type">
-                      <label>
-                        <input
-                          type="radio"
-                          name="userType"
-                          value="customer"
-                          checked={formData.userType === 'customer'}
-                          onChange={handleChange}
-                        />
-                        Customer
-                      </label>
-                      <label>
-                        <input
-                          type="radio"
-                          name="userType"
-                          value="store_owner"
-                          checked={formData.userType === 'store_owner'}
-                          onChange={handleChange}
-                        />
-                        Store
-                      </label>
-                    </div>
-                  </div>
+                  
                 </div>
 
                 {formData.userType === 'customer' ? (

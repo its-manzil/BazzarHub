@@ -1,98 +1,39 @@
-import React from 'react';
-import './trending.css';
+import React from "react";
+import "./trending.css";
 
-const Trending = () => {
-  // Sample trending products data
-  const trendingProducts = [
-    {
-      id: 1,
-      name: 'Wireless Headphones',
-      price: '$99.99',
-      image: '',
-      rating: 4.5
-    },
-    {
-      id: 2,
-      name: 'Smart Watch Pro',
-      price: '$199.99',
-      image: 'https://via.placeholder.com/200x200?text=Smart+Watch',
-      rating: 4.8
-    },
-    {
-      id: 3,
-      name: 'Bluetooth Speaker',
-      price: '$59.99',
-      image: 'https://via.placeholder.com/200x200?text=Speaker',
-      rating: 4.2
-    },
-    {
-      id: 4,
-      name: 'Gaming Keyboard',
-      price: '$79.99',
-      image: 'https://via.placeholder.com/200x200?text=Keyboard',
-      rating: 4.7
-    },
-    {
-      id: 5,
-      name: 'Wireless Mouse',
-      price: '$39.99',
-      image: 'https://via.placeholder.com/200x200?text=Mouse',
-      rating: 4.3
-    },
-    {
-      id: 6,
-      name: '4K Webcam',
-      price: '$129.99',
-      image: 'https://via.placeholder.com/200x200?text=Webcam',
-      rating: 4.6
-    },
-    {
-      id: 7,
-      name: 'Portable SSD',
-      price: '$149.99',
-      image: 'https://via.placeholder.com/200x200?text=SSD',
-      rating: 4.9
-    },
-    {
-      id: 8,
-      name: 'Noise Cancelling Earbuds',
-      price: '$159.99',
-      image: 'https://via.placeholder.com/200x200?text=Earbuds',
-      rating: 4.4
-    }
-  ];
+const trendingProducts = [
+  { id: 1, name: "Apple", price: "$1.00", image: "./images/Product 1.jpg" },
+  { id: 2, name: "Banana", price: "$0.50", image: "./images/Product 1.jpg" },
+  { id: 3, name: "Carrot", price: "$0.30", image: "./images/Product 1.jpg" },
+  { id: 4, name: "Tomato", price: "$0.40", image: "./images/Product 1.jpg" },
+  { id: 5, name: "Bread", price: "$1.50", image: "./images/Product 1.jpg" },
+  { id: 6, name: "Cake", price: "$2.00", image: "./images/Product 1.jpg" },
+  { id: 7, name: "Orange", price: "$0.70", image: "./images/Product 1.jpg" },
+  { id: 8, name: "Potato", price: "$0.20", image: "./images/Product 1.jpg" },
+  { id: 9, name: "Milk", price: "$1.20", image: "./images/Product 1.jpg" },
+  { id: 10, name: "Cheese", price: "$1.80", image: "./images/Product 1.jpg" },
+  { id: 11, name: "Muffin", price: "$1.00", image: "./images/Product 1.jpg" },
+  { id: 12, name: "Yogurt", price: "$0.90", image: "./images/Product 1.jpg" },
+];
 
+export default function Trending() {
   return (
-    <div className="trending-container">
-      <h2 className="trending-title">Trending Now</h2>
-      <div className="trending-scroll-container">
-        <div className="trending-products">
-          {trendingProducts.map((product) => (
-            <div className="product-card" key={product.id}>
-              <div className="product-image-container">
-                <img src={product.image} alt={product.name} className="product-image" />
-                <div className="product-overlay">
-                  <button className="add-to-cart">Add to Cart</button>
-                </div>
-              </div>
-              <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <div className="product-rating">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className={`star ${i < Math.floor(product.rating) ? 'filled' : ''}`}>
-                      {i < Math.floor(product.rating) ? '★' : '☆'}
-                    </span>
-                  ))}
-                  <span className="rating-value">{product.rating}</span>
-                </div>
-                <p className="product-price">{product.price}</p>
-              </div>
+    <section className="trending-container">
+      <h2 className="trending-title">Trending Products</h2>
+      <div className="trending-product-grid">
+        {trendingProducts.slice(0, 6).map((product) => (
+          <div key={product.id} className="product-card">
+            <div className="product-image-container">
+              <img src={product.image} alt={product.name} loading="lazy" />
             </div>
-          ))}
-        </div>
+            <div className="product-info">
+              <h4>{product.name}</h4>
+              <p className="product-price">{product.price}</p>
+              <button className="buy-button">Add to Cart</button>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+    </section>
   );
-};
-
-export default Trending;
+}
