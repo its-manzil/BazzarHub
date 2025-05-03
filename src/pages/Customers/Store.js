@@ -6,18 +6,18 @@ import CartLogo from "./CartLogo";
 import "./store.css";
 
 const products = [
-  { id: 1, name: "Apple", price: "$1.00", image: "https://via.placeholder.com/100", category: "Fruits" },
-  { id: 2, name: "Banana", price: "$0.50", image: "https://via.placeholder.com/100", category: "Fruits" },
-  { id: 3, name: "Carrot", price: "$0.30", image: "https://via.placeholder.com/100", category: "Vegetables" },
-  { id: 4, name: "Tomato", price: "$0.40", image: "https://via.placeholder.com/100", category: "Vegetables" },
-  { id: 5, name: "Bread", price: "$1.50", image: "https://via.placeholder.com/100", category: "Bakery" },
-  { id: 6, name: "Cake", price: "$2.00", image: "https://via.placeholder.com/100", category: "Bakery" },
-  { id: 7, name: "Orange", price: "$0.70", image: "https://via.placeholder.com/100", category: "Fruits" },
-  { id: 8, name: "Potato", price: "$0.20", image: "https://via.placeholder.com/100", category: "Vegetables" },
-  { id: 9, name: "Milk", price: "$1.20", image: "https://via.placeholder.com/100", category: "Dairy" },
-  { id: 10, name: "Cheese", price: "$1.80", image: "https://via.placeholder.com/100", category: "Dairy" },
-  { id: 11, name: "Muffin", price: "$1.00", image: "https://via.placeholder.com/100", category: "Bakery" },
-  { id: 12, name: "Yogurt", price: "$0.90", image: "https://via.placeholder.com/100", category: "Dairy" },
+  { id: 1, name: "Apple", price: "$1.00", image: "./images/Product 1.jpg", category: "Fruits" },
+  { id: 2, name: "Banana", price: "$0.50", image: "./images/Product 1.jpg", category: "Fruits" },
+  { id: 3, name: "Carrot", price: "$0.30", image: "./images/Product 1.jpg", category: "Vegetables" },
+  { id: 4, name: "Tomato", price: "$0.40", image: "./images/Product 1.jpg", category: "Vegetables" },
+  { id: 5, name: "Bread", price: "$1.50", image: "./images/Product 1.jpg", category: "Bakery" },
+  { id: 6, name: "Cake", price: "$2.00", image: "./images/Product 1.jpg", category: "Bakery" },
+  { id: 7, name: "Orange", price: "$0.70", image: "./images/Product 1.jpg", category: "Fruits" },
+  { id: 8, name: "Potato", price: "$0.20", image: "./images/Product 1.jpg", category: "Vegetables" },
+  { id: 9, name: "Milk", price: "$1.20", image: "./images/Product 1.jpg", category: "Dairy" },
+  { id: 10, name: "Cheese", price: "$1.80", image: "./images/Product 1.jpg", category: "Dairy" },
+  { id: 11, name: "Muffin", price: "$1.00", image: "./images/Product 1.jpg", category: "Bakery" },
+  { id: 12, name: "Yogurt", price: "$0.90", image: "./images/Product 1.jpg", category: "Dairy" },
 ];
 
 const categories = ["All", "Fruits", "Vegetables", "Bakery", "Dairy"];
@@ -79,8 +79,8 @@ export default function Store() {
           ) : (
             <div className="no-results-container">
               <p className="no-results">No products found matching your criteria</p>
-              <button 
-                className="reset-filters" 
+              <button
+                className="reset-filters"
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCategory("All");

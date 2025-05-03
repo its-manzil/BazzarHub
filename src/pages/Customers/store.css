@@ -1,4 +1,16 @@
-/* Store container */
+/* Root Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+}
+
+/* Store Container */
 .store-container {
   padding: 1rem 2rem;
   width: 100%;
@@ -11,13 +23,13 @@
 /* Title */
 .store-title {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: bold;
-  margin-bottom: 1.5rem;
   margin-top: 20px;
+  margin-bottom: 1.5rem;
 }
 
-/* Search */
+/* Search Section */
 .search-section {
   display: flex;
   justify-content: center;
@@ -44,42 +56,54 @@
   cursor: pointer;
 }
 
-/* Category - centered */
-.category-section {
+/* Category Section */
+.category-scroll-container {
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
+  margin-bottom: 7px; /* 5px gap before cards */
+}
+
+.category-bar {
+  display: flex;
+  gap: 0.75rem;
   flex-wrap: wrap;
-  margin: 1rem 0 1.5rem 0;
+  justify-content: center;
+  padding: 0.5rem;
 }
 
 .category-button {
-  padding: 0.5rem 1rem;
-  background-color: #eee;
-  border: none;
-  border-radius: 20px;
+  background-color: white;
+  color: #0d6efd;
+  border: 1px solid #0d6efd;
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
   font-size: 0.9rem;
-  transition: 0.2s ease-in-out;
 }
 
-.category-button.active,
 .category-button:hover {
-  background-color: #3b82f6;
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.category-button.active {
+  background-color: #0d6efd;
   color: white;
 }
 
-/* Scrollable product section (80vh minus assumed header, search, category, and navbar height) */
+/* Product Section Scroll */
 .store-product-scrollable {
-  height: calc(100vh - 230px); /* Adjust this if your top section height differs */
+  height: calc(100vh - 265px); /* Full view minus nav + title + search + category */
   overflow-y: auto;
-  padding: 0 1rem 70px 1rem; /* 70px bottom padding to avoid nav overlap */
+  padding: 0 1rem 80px; /* Bottom padding to prevent nav overlap */
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Product grid */
+/* Product Grid */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -101,32 +125,47 @@
 
 @media (max-width: 480px) {
   .product-grid {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
-/* Product card */
+/* Product Card */
 .product-card {
   background-color: #fff;
-  padding: 1rem;
+  padding: 0; /* Remove padding so the image can take full width */
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  min-height: 260px;
+  justify-content: flex-start; /* Align items to the top */
+  min-height: 350px; /* Increase the height for the image */
   text-align: center;
 }
 
-.product-card img {
-  max-width: 80px;
-  max-height: 80px;
-  object-fit: contain;
-  margin-bottom: 0.5rem;
+/* Product Image Container */
+.product-image-container {
+  width: 100%; /* Make the image container take full width */
+  height: 200px; /* Set the height for the image */
+  overflow: hidden; /* Ensure image doesn't overflow */
+  border-radius: 10px 10px 0 0; /* Round top corners */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.product-name {
+.product-image-container img {
+  width: 100%; /* Make the image take full width of the container */
+  height: 100%; /* Make the image take full height of the container */
+  object-fit: cover; /* Ensure the image covers the container */
+}
+
+/* Product Name */
+.product-info {
+  padding: 1rem;
+}
+
+.product-info h4 {
   font-weight: bold;
   margin-bottom: 0.25rem;
 }
@@ -137,7 +176,7 @@
   margin-bottom: 0.75rem;
 }
 
-.add-to-cart-btn {
+.buy-button {
   padding: 0.5rem 1rem;
   background-color: gold;
   color: black;
@@ -148,6 +187,27 @@
   transition: 0.2s;
 }
 
-.add-to-cart-btn:hover {
+.buy-button:hover {
   background-color: #e6b800;
+}
+
+/* Optional Bottom Navigation */
+.bottom-navbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  background-color: white;
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.bottom-navbar button {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
 }
