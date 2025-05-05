@@ -1,34 +1,45 @@
 import React from 'react';
-import Nav from '../../pages/Customers/Nav';
-import Logo from '../../pages/Customers/Logo';
-import CartLogo from '../../pages/Customers/CartLogo';
-import './admin.css';
+
+
+import AdminSideBar from './AdminSideBar';
+import './admindashboard.css';
 
 function AdminDashboard() {
   return (
-    <>
-      <Nav />
-      <Logo />
-      <CartLogo />
+    <div className="admin-layout">
+      <AdminSideBar />
 
-      <h1 className="about-heading">Admin Dashboard</h1>
-      <section className="split-hero">
-        <div className="hero-text">
-          <h1>
-            Welcome, <span className="highlight">Admin</span>
-          </h1>
-          <p>
-            From here, manage your BazaarHub store by adding categories, products, and maintaining the latest inventory.
-          </p>
-          <p className="secondary-text">
-            Use the navigation to add or edit product details, update categories, and keep your marketplace thriving.
-          </p>
-        </div>
-        <div className="hero-image">
-          <img src="/images/admin-panel.png" alt="Admin Panel" height={400} width={350} />
-        </div>
-      </section>
-    </>
+      <main className="admin-main">
+        <header className="admin-header">
+        
+          
+        </header>
+
+        <section className="dashboard-overview">
+          <h1 className="dashboard-title">Welcome, Admin 👋</h1>
+          <p className="dashboard-subtext">Manage your BazaarHub store efficiently.</p>
+
+          <div className="dashboard-cards">
+            <div className="card">
+              <h3>Total Orders</h3>
+              <p>1,234</p>
+            </div>
+            <div className="card">
+              <h3>Total Revenue</h3>
+              <p>Rs. 8</p>
+            </div>
+            <div className="card">
+              <h3>Products Listed</h3>
+              <p>342</p>
+            </div>
+            <div className="card">
+              <h3>Pending Shipments</h3>
+              <p>27</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
 

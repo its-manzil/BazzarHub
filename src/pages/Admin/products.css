@@ -1,0 +1,77 @@
+.admin-products {
+    padding: 2rem;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .products-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+  }
+  
+  .products-subtext {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+  }
+  
+  .products-actions {
+    margin-bottom: 1.5rem;
+  }
+  
+  .btn-add {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .btn-add:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .products-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  
+  .product-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+  
+  .product-card h3 {
+    font-size: 1.2rem;
+    color: #1f2937;
+    margin-bottom: 0.3rem;
+  }
+  
+  .product-card p {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin: 0.2rem 0;
+  }
+  
+  .btn-edit {
+    margin-top: 0.5rem;
+    background-color: #10b981;
+    color: white;
+    padding: 0.4rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+  
+  .btn-edit:hover {
+    background-color: #059669;
+  }
+  
