@@ -19,7 +19,7 @@ function Categories() {
           <p>Items: 42</p>
           <button className="btn-edit">Edit</button>
         </div>
-        {/* Add more category cards dynamically */}
+        
       </div>
     </div>
   );
