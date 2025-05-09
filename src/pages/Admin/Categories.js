@@ -1,28 +1,35 @@
 import React from 'react';
-import './categories.css';
+import './products.css';
+import AdminSideBar from './AdminSideBar';
 
-function Categories() {
+function Products() {
   return (
-    <div className="admin-categories">
-      <h1 className="categories-title">Manage Categories</h1>
-      <p className="categories-subtext">
-        View existing categories or create new ones to organize your store.
-      </p>
+    <>
+    <div className="admin-page-layout">
+      <AdminSideBar />
+      <div className="admin-products">
+        <h1 className="products-title" >Manage Products</h1>
+        <p className="products-subtext">
+          View, edit, or add new products to your store.
+        </p>
 
-      <div className="categories-actions">
-        <button className="btn-add">Add New Category</button>
-      </div>
-
-      <div className="categories-list">
-        <div className="category-card">
-          <h3>Electronics</h3>
-          <p>Items: 42</p>
-          <button className="btn-edit">Edit</button>
+        <div className="products-actions">
+          <button className="btn-add">Add New Product</button>
         </div>
-        
+
+        <div className="products-list">
+          <div className="product-card">
+            <h3>Product Name</h3>
+            <p>Category: Electronics</p>
+            <p>Price: $299</p>
+            <button className="btn-edit">Edit</button>
+          </div>
+          {/* Add more product cards dynamically later */}
+        </div>
       </div>
     </div>
+    </>
   );
 }
 
-export default Categories;
+export default Products;

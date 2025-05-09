@@ -17,6 +17,12 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminSidebar from "./pages/Admin/AdminSideBar";
 import Products from "./pages/Admin/Products";
 import Settings from "./pages/Admin/Settings";
+import Orders from "./pages/Admin/Orders";
+import Categories from "./pages/Admin/Categories";
+
+import Reports from "./pages/Admin/Reports";
+
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
   {
@@ -75,9 +81,24 @@ const router = createBrowserRouter([
     element: <Products />,
   },
   {
+    path: "Categories",
+    element: <Categories />,
+  },
+  {
+    path: "Orders",
+    element: <Orders />,
+  },
+    {
+    path: "Reports",
+    element: <Reports />,
+  },
+
+  {
     path: "Settings",
     element: <Settings />,
   },
+
+  
 ]);
 
 root.render(
