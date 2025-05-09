@@ -14,12 +14,15 @@ import Checkout from "./pages/Customers/Checkout";
 import Profile from "./pages/Customers/Profile";
 import Dashboard from "./pages/Customers/Dashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AddCategory from "./pages/Admin/AddCategory";
-import AddProduct from "./pages/Admin/AddProduct";
-import EditProduct from "./pages/Admin/EditProduct";
-import EditCategory from "./pages/Admin/EditCategory";
-import ManageCategory from "./pages/Admin/ManageCategory";
-import ManageProduct from "./pages/Admin/ManageProducts";
+import AdminSidebar from "./pages/Admin/AdminSideBar";
+import Products from "./pages/Admin/Products";
+import Settings from "./pages/Admin/Settings";
+import Orders from "./pages/Admin/Orders";
+import Categories from "./pages/Admin/Categories";
+
+import Reports from "./pages/Admin/Reports";
+
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
   {
@@ -68,30 +71,34 @@ const router = createBrowserRouter([
     path: "AdminDashboard",
     element: <AdminDashboard />,
   },
+  
   {
-    path: "AddCategory",
-    element: <AddCategory />,
+    path: "AdminSideBar",
+    element: <AdminSidebar />,
   },
   {
-    path: "AddProduct",
-    element: <AddProduct />,
+    path: "Products",
+    element: <Products />,
   },
   {
-    path: "EditCategory",
-    element: <EditCategory />,
+    path: "Categories",
+    element: <Categories />,
   },
   {
-    path: "ManageCatogory",
-    element: <ManageCategory />,
+    path: "Orders",
+    element: <Orders />,
   },
+    {
+    path: "Reports",
+    element: <Reports />,
+  },
+
   {
-    path: "ManageProduct",
-    element: <ManageProduct />,
+    path: "Settings",
+    element: <Settings />,
   },
-  {
-    path: "EditProduct",
-    element: <EditProduct />,
-  },
+
+  
 ]);
 
 root.render(
