@@ -12,6 +12,7 @@ function AdminSideBar() {
         <a href="/Categories">Categories</a>
         <a href="/Orders">Orders</a>
         <a href="/Reports">Reports</a>
+        <a href="/ContactMessages">Customer Feedback</a>
         <a href="/Settings">Settings</a>
       </nav>
     </aside>
