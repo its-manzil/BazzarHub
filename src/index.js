@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-//import App from "./App";
+// import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import Home from "./pages/Customers/Home";
 import About from "./pages/Customers/About";
@@ -19,8 +19,8 @@ import Products from "./pages/Admin/Products";
 import Settings from "./pages/Admin/Settings";
 import Orders from "./pages/Admin/Orders";
 import Categories from "./pages/Admin/Categories";
-
 import Reports from "./pages/Admin/Reports";
+import ContactMessages from "./pages/Admin/ContactMessages";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -97,6 +97,11 @@ const router = createBrowserRouter([
     path: "Settings",
     element: <Settings />,
   },
+  {
+    path: "ContactMessages",
+    element: <ContactMessages />,
+  },
+
 
   
 ]);

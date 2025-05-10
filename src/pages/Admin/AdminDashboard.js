@@ -1,6 +1,4 @@
 import React from 'react';
-
-
 import AdminSideBar from './AdminSideBar';
 import './admindashboard.css';
 
@@ -11,8 +9,7 @@ function AdminDashboard() {
 
       <main className="admin-main">
         <header className="admin-header">
-        
-          
+          {/* You can add a search bar or notifications later */}
         </header>
 
         <section className="dashboard-overview">

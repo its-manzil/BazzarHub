@@ -1,36 +1,86 @@
-/* AdminSidebar.css */
+/* Overall layout */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f5f7fa;
+}
 
-.admin-sidebar {
-    width: 250px;
-    background-color: #1f2937;
-    color: #fff;
-    padding: 2rem 1rem;
-    position: fixed;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    overflow-y: auto;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+/* Main dashboard content */
+.admin-main {
+  margin-left: 250px; /* Matches sidebar width */
+  flex: 1;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Dashboard header placeholder */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Overview Section */
+.dashboard-overview {
+  margin-top: 1.5rem;
+}
+
+.dashboard-title {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-subtext {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+/* Dashboard Cards */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card h3 {
+  font-size: 1rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-main {
+    margin-left: 0;
+    padding: 1rem;
   }
-  
-  .sidebar-nav {
-    margin-top: 6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+
+  .dashboard-title {
+    font-size: 1.8rem;
   }
-  
-  .sidebar-nav a {
-    color: #d1d5db;
-    text-decoration: none;
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    transition: background 0.2s;
-    font-weight: 500;
+
+  .card p {
+    font-size: 1.2rem;
   }
-  
-  .sidebar-nav a:hover {
-    background-color: #374151;
-    color: #ffffff;
-  }
-  
+}

@@ -1,46 +1,72 @@
 import React from 'react';
-import './settings.css';
 import AdminSideBar from './AdminSideBar';
+import './settings.css';
 
 function Settings() {
   return (
-    <>
-    <AdminSideBar/>
-    <div className="admin-settings">
-      <h1 className="settings-title">Store Settings</h1>
-      <p className="settings-subtext">
-        Configure your store preferences, profile, and system settings.
-      </p>
+    <div className="admin-layout">
+      <AdminSideBar />
 
-      <form className="settings-form">
-        <div className="form-group">
-          <label htmlFor="storeName">Store Name</label>
-          <input type="text" id="storeName" placeholder="Enter store name" />
-        </div>
+      <main className="admin-main">
+        <header className="admin-settings-header">
+          <h1>Admin Settings</h1>
+        </header>
 
-        <div className="form-group">
-          <label htmlFor="email">Admin Email</label>
-          <input type="email" id="email" placeholder="admin@example.com" />
-        </div>
+        <section className="settings-section">
+          {/* Profile Settings */}
+          <div className="settings-card">
+            <h2 className="section-title">Profile Information</h2>
+            <form className="settings-form">
+              <label>
+                Full Name:
+                <input type="text" placeholder="Admin Name" />
+              </label>
+              <label>
+                Email:
+                <input type="email" placeholder="admin@example.com" />
+              </label>
+              <button type="submit" className="save-button">Update Profile</button>
+            </form>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="currency">Currency</label>
-          <select id="currency">
-            <option value="USD">$ USD</option>
-            <option value="EUR">€ EUR</option>
-            <option value="NPR">Rs NPR</option>
-          </select>
-        </div>
+          {/* Password Settings */}
+          <div className="settings-card">
+            <h2 className="section-title">Change Password</h2>
+            <form className="settings-form">
+              <label>
+                Current Password:
+                <input type="password" />
+              </label>
+              <label>
+                New Password:
+                <input type="password" />
+              </label>
+              <label>
+                Confirm Password:
+                <input type="password" />
+              </label>
+              <button type="submit" className="save-button">Change Password</button>
+            </form>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="timezone">Timezone</label>
-          <input type="text" id="timezone" placeholder="e.g. GMT+5:45" />
-        </div>
-
-        <button type="submit" className="save-btn">Save Settings</button>
-      </form>
+          {/* Notification Settings */}
+          <div className="settings-card">
+            <h2 className="section-title">Notifications</h2>
+            <form className="settings-form">
+              <label>
+                <input type="checkbox" defaultChecked />
+                Email me about new orders
+              </label>
+              <label>
+                <input type="checkbox" />
+                Weekly reports
+              </label>
+              <button type="submit" className="save-button">Update Preferences</button>
+            </form>
+          </div>
+        </section>
+      </main>
     </div>
-    </>
   );
 }
 
