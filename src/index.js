@@ -21,6 +21,7 @@ import Orders from "./pages/Admin/Orders";
 import Categories from "./pages/Admin/Categories";
 import Reports from "./pages/Admin/Reports";
 import ContactMessages from "./pages/Admin/ContactMessages";
+import AdminLogin from "./pages/Admin/AdminLogin";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -101,7 +102,10 @@ const router = createBrowserRouter([
     path: "ContactMessages",
     element: <ContactMessages />,
   },
-
+  {
+    path: "Admin",
+    element: <AdminLogin />,
+  },
 
   
 ]);
