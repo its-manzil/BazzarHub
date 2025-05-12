@@ -9,7 +9,7 @@ function AdminLogin() {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Hardcoded credentials
+  // Hardcoded 
   const adminEmail = 'admin@bazaarhub.com';
   const adminPassword = 'admin123';
 
