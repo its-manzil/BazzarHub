@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
 import Nav from './Nav';
-import Logo from "./Logo"
+import Logo from "./Logo";
 import CartLogo from './CartLogo';
+
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,26 +34,52 @@ const Login = () => {
 
   const validateForm = () => {
     const newErrors = {};
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    const phoneRegex = /^[0-9]{7,15}$/;
+
     if (isLogin) {
       if (!formData.username && !formData.email && !formData.phone) {
         newErrors.loginField = 'Please enter username, email or phone';
       }
+
+      if (formData.username && !usernameRegex.test(formData.username)) {
+        newErrors.loginField = 'Username must be 3-20 characters with letters, numbers or underscores';
+      }
+
       if (!formData.password) {
         newErrors.password = 'Password is required';
       }
     } else {
       if (!formData.email) {
         newErrors.email = 'Email is required';
-      } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-        newErrors.email = 'Email is invalid';
+      } else if (!emailRegex.test(formData.email)) {
+        newErrors.email = 'Email format is invalid';
+      }
+
+      if (!formData.phone) {
+        newErrors.phone = 'Phone number is required';
+      } else if (!phoneRegex.test(formData.phone)) {
+        newErrors.phone = 'Phone number must be 7 to 15 digits';
+      }
+
+      if (!formData.username) {
+        newErrors.username = 'Username is required';
+      } else if (!usernameRegex.test(formData.username)) {
+        newErrors.username = 'Username must be 3-20 characters with letters, numbers or underscores';
       }
 
       if (formData.userType === 'customer') {
         if (!formData.firstName) {
           newErrors.firstName = 'First name is required';
+        } else if (!/^[A-Za-z\s]+$/.test(formData.firstName)) {
+          newErrors.firstName = 'First name must only contain letters';
         }
+
         if (!formData.lastName) {
           newErrors.lastName = 'Last name is required';
+        } else if (!/^[A-Za-z\s]+$/.test(formData.lastName)) {
+          newErrors.lastName = 'Last name must only contain letters';
         }
       } else {
         if (!formData.storeName) {
@@ -60,22 +87,23 @@ const Login = () => {
         }
       }
 
-      if (!formData.username) {
-        newErrors.username = 'Username is required';
-      }
-
       if (!formData.password) {
         newErrors.password = 'Password is required';
       } else if (formData.password.length < 8) {
         newErrors.password = 'Password must be at least 8 characters';
+      } else if (!/[A-Z]/.test(formData.password) || !/[a-z]/.test(formData.password) || !/[0-9]/.test(formData.password)) {
+        newErrors.password = 'Password must include uppercase, lowercase, and number';
       }
 
       if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
 
-      if (!formData.phone) {
-        newErrors.phone = 'Phone number is required';
+      if (formData.profilePicture) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (!allowedTypes.includes(formData.profilePicture.type)) {
+          newErrors.profilePicture = 'Only JPG, JPEG, and PNG formats are allowed';
+        }
       }
     }
 
@@ -87,7 +115,6 @@ const Login = () => {
     e.preventDefault();
     if (validateForm()) {
       console.log('Form data:', formData);
-
       if (isLogin) {
         alert('Login successful!');
         navigate('/dashboard');
@@ -102,13 +129,11 @@ const Login = () => {
     <>
       <Nav />
       <Logo />
-      
-      <CartLogo/>
+      <CartLogo />
       <div className="login-container">
         <div className={`form-container ${isLogin ? 'login' : 'signup'}`}>
           <div className="form-content">
             <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
-
             {isLogin ? (
               <form onSubmit={handleSubmit} className="login-form">
                 <div className="form-group">
@@ -133,11 +158,7 @@ const Login = () => {
                       onChange={handleChange}
                       placeholder="Enter your password"
                     />
-                    <button 
-                      type="button" 
-                      className="show-password"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
+                    <button type="button" className="show-password" onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
@@ -186,20 +207,16 @@ const Login = () => {
                   </div>
                 </div>
 
-                <div className="two-column">
-                  <div className="form-group">
-                    <label>Username*</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      placeholder="Choose a username"
-                    />
-                    {errors.username && <span className="error">{errors.username}</span>}
-                  </div>
-
-                  
+                <div className="form-group">
+                  <label>Username*</label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Choose a username"
+                  />
+                  {errors.username && <span className="error">{errors.username}</span>}
                 </div>
 
                 {formData.userType === 'customer' ? (
@@ -253,11 +270,7 @@ const Login = () => {
                         onChange={handleChange}
                         placeholder="Create password"
                       />
-                      <button 
-                        type="button" 
-                        className="show-password"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
+                      <button type="button" className="show-password" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
@@ -285,6 +298,7 @@ const Login = () => {
                     onChange={handleChange}
                     accept="image/*"
                   />
+                  {errors.profilePicture && <span className="error">{errors.profilePicture}</span>}
                 </div>
 
                 <button type="submit" className="submit-btn">Create Account</button>
