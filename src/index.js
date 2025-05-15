@@ -22,6 +22,9 @@ import Categories from "./pages/Admin/Categories";
 import Reports from "./pages/Admin/Reports";
 import ContactMessages from "./pages/Admin/ContactMessages";
 import AdminLogin from "./pages/Admin/AdminLogin";
+import Stock from "./pages/Admin/Stock";
+
+
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -106,6 +109,10 @@ const router = createBrowserRouter([
     path: "Admin",
     element: <AdminLogin />,
   },
+  {
+    path: "Stock",
+    element: <Stock />,
+  }
 
   
 ]);
