@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
 import Nav from './Nav';
@@ -6,7 +6,9 @@ import Logo from "./Logo";
 import CartLogo from './CartLogo';
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
+
+
+const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -20,6 +22,14 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      navigate('/profile');
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
