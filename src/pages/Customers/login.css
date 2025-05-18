@@ -1,31 +1,30 @@
 /* login.css */
 
-/* Base Styles & Variables */
+/* Base Styles */
 :root {
   --primary-color: #4361ee;
   --primary-hover: #3a56d4;
   --secondary-color: #f8f9fa;
   --text-color: #333;
-  --light-text: white;
+  --light-text: #6c757d;
   --border-color: #dee2e6;
   --error-color: #dc3545;
   --success-color: #28a745;
-  --border-radius: 8px;
   --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
 }
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: var(--text-color);
-  background-color: #f5f7fa;
+  background-color: #f5f7ff;
 }
 
 /* Login Container */
@@ -39,38 +38,41 @@ body {
 
 .form-container {
   display: flex;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  background-color: white;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: var(--box-shadow);
   max-width: 900px;
   width: 100%;
 }
 
 .form-content {
-  flex: 1;
   padding: 2.5rem;
+  flex: 1;
+  min-width: 400px;
 }
 
 .image-container {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #e0f2ff 0%, #f0f7ff 100%);
+  padding: 1rem;
 }
 
 .image-container img {
-  width: 100%;
+  max-width: 100%;
   height: auto;
-  object-fit: cover;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 /* Form Elements */
 h2 {
+  color: var(--primary-color);
   margin-bottom: 1.5rem;
   font-size: 1.8rem;
-  color: var(--primary-color);
+  font-weight: 600;
   text-align: center;
 }
 
@@ -82,14 +84,14 @@ h2 {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: white;
+  color: var(--text-color);
 }
 
 .form-group input {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border-radius: 6px;
   font-size: 1rem;
   transition: var(--transition);
 }
@@ -97,7 +99,7 @@ h2 {
 .form-group input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: white;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
 .password-input {
@@ -105,7 +107,7 @@ h2 {
 }
 
 .password-input input {
-  padding-right: 3rem;
+  padding-right: 3.5rem;
 }
 
 .show-password {
@@ -115,14 +117,17 @@ h2 {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--light-text);
+  color: var(--primary-color);
   cursor: pointer;
   font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
   transition: var(--transition);
 }
 
 .show-password:hover {
-  color: var(--primary-color);
+  background-color: rgba(67, 97, 238, 0.1);
 }
 
 /* Two Column Layout */
@@ -130,25 +135,6 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-}
-
-/* Buttons */
-.submit-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  margin-top: 0.5rem;
-}
-
-.submit-btn:hover {
-  background-color: var(--primary-hover);
 }
 
 /* Remember Me & Forgot Password */
@@ -165,18 +151,39 @@ h2 {
 }
 
 .remember-forgot input[type="checkbox"] {
-  margin-right: 0.5rem;
   width: auto;
+  margin-right: 0.5rem;
 }
 
 .remember-forgot a {
   color: var(--primary-color);
   text-decoration: none;
   font-size: 0.9rem;
+  transition: var(--transition);
 }
 
 .remember-forgot a:hover {
   text-decoration: underline;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 0.5rem;
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 /* Toggle Form */
@@ -193,6 +200,7 @@ h2 {
   cursor: pointer;
   font-weight: 500;
   margin-left: 0.5rem;
+  transition: var(--transition);
 }
 
 .toggle-form button:hover {
@@ -202,16 +210,29 @@ h2 {
 /* Error Messages */
 .error {
   display: block;
-  margin-top: 0.5rem;
   color: var(--error-color);
   font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.server-error {
+  color: var(--error-color);
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 /* File Input */
-input[type="file"] {
+.form-group input[type="file"] {
   padding: 0.5rem;
   border: 1px dashed var(--border-color);
-  background-color: var(--secondary-color);
+}
+
+.form-group input[type="file"]:focus {
+  border-style: solid;
 }
 
 /* Responsive Design */
@@ -225,6 +246,7 @@ input[type="file"] {
   }
 
   .form-content {
+    min-width: auto;
     padding: 1.5rem;
   }
 
@@ -234,45 +256,12 @@ input[type="file"] {
   }
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.form-container {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Accessibility Improvements */
-input:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-color: #f8f9fa;
-    --secondary-color: #343a40;
-    --border-color: #495057;
-    --light-text: #adb5bd;
-    background-color: #212529;
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1rem;
   }
 
-  .form-container {
-    
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  .form-group input {
-    background-color: #343a40;
-    color: white;
-    border-color: #495057;
-  }
-
-  input[type="file"] {
-    background-color: #495057;
+  .form-content {
+    padding: 1.25rem;
   }
 }
