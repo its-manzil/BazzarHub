@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const app = express();
-const port = 8089;
+const port = 8099;
 
 // Middleware
 app.use(bodyParser.json());
@@ -172,6 +172,99 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Profile error:', error);
     res.status(500).json({ message: 'Error fetching profile' });
+  }
+});
+
+// Update Profile
+app.put('/api/profile/:id', verifyToken, upload.single('profile_picture'), async (req, res) => {
+  try {
+    const userId = req.params.id;
+    if (parseInt(userId) !== req.userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const { full_name, username, email, phone, currentPassword, newPassword } = req.body;
+    
+    // Check if new username/email/phone already exists
+    const [existing] = await db.query(
+      `SELECT * FROM customers 
+       WHERE (email = ? OR username = ? OR phone = ?) 
+       AND id != ?`,
+      [email, username, phone, userId]
+    );
+    
+    if (existing.length > 0) {
+      const conflict = existing[0];
+      if (conflict.email === email) {
+        return res.status(400).json({ field: 'email', message: 'Email already in use' });
+      }
+      if (conflict.username === username) {
+        return res.status(400).json({ field: 'username', message: 'Username already taken' });
+      }
+      if (conflict.phone === phone) {
+        return res.status(400).json({ field: 'phone', message: 'Phone number already in use' });
+      }
+    }
+
+    // Verify current password if changing password
+    if (currentPassword) {
+      const [users] = await db.query('SELECT password FROM customers WHERE id = ?', [userId]);
+      const user = users[0];
+      
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ field: 'currentPassword', message: 'Current password is incorrect' });
+      }
+      
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await db.query('UPDATE customers SET password = ? WHERE id = ?', [hashedPassword, userId]);
+    }
+
+    // Update profile
+    const profilePicture = req.file ? req.file.filename : null;
+    const updateFields = {
+      full_name,
+      username,
+      email,
+      phone,
+      ...(profilePicture && { profile_picture: profilePicture })
+    };
+
+    await db.query('UPDATE customers SET ? WHERE id = ?', [updateFields, userId]);
+
+    // Get updated user data
+    const [updatedUser] = await db.query(
+      'SELECT id, username, email, phone, full_name, profile_picture, created_at FROM customers WHERE id = ?',
+      [userId]
+    );
+
+    res.json({ user: updatedUser[0] });
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ message: 'Error updating profile' });
+  }
+});
+
+// Get User Orders
+app.get('/api/orders/:userId', verifyToken, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (parseInt(userId) !== req.userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const [orders] = await db.query(
+      `SELECT o.order_id, o.total_amount, o.order_status, o.created_at 
+       FROM orders o
+       WHERE o.customer_id = ?
+       ORDER BY o.created_at DESC`,
+      [userId]
+    );
+
+    res.json({ orders });
+  } catch (error) {
+    console.error('Orders error:', error);
+    res.status(500).json({ message: 'Error fetching orders' });
   }
 });
 

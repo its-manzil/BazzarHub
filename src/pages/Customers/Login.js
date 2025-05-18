@@ -99,7 +99,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:8089/api/login', {
+      const response = await fetch('http://localhost:8099/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ const Login = () => {
         }
       });
 
-      const response = await fetch('http://localhost:8089/api/signup', {
+      const response = await fetch('http://localhost:8099/api/signup', {
         method: 'POST',
         body: formDataToSend,
       });
