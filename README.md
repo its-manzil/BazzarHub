@@ -80,3 +80,10 @@ CREATE TABLE IF NOT EXISTS item_category_mapping (
     FOREIGN KEY (item_id) REFERENCES items(item_id),
     FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
+
+
+
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+packages to be install after creating server.js:
+npm install express mysql2 body-parser cors multer bcrypt jsonwebtoken dotenv

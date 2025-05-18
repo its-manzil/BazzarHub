@@ -13,19 +13,17 @@ const Login = () => {
     password: '',
     email: '',
     phone: '',
-    firstName: '',
-    lastName: '',
-    storeName: '',
-    profilePicture: null,
-    userType: 'customer',
+    full_name: '',
+    profile_picture: null,
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'profilePicture') {
+    if (name === 'profile_picture') {
       setFormData({ ...formData, [name]: files[0] });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -69,22 +67,10 @@ const Login = () => {
         newErrors.username = 'Username must be 3-20 characters with letters, numbers or underscores';
       }
 
-      if (formData.userType === 'customer') {
-        if (!formData.firstName) {
-          newErrors.firstName = 'First name is required';
-        } else if (!/^[A-Za-z\s]+$/.test(formData.firstName)) {
-          newErrors.firstName = 'First name must only contain letters';
-        }
-
-        if (!formData.lastName) {
-          newErrors.lastName = 'Last name is required';
-        } else if (!/^[A-Za-z\s]+$/.test(formData.lastName)) {
-          newErrors.lastName = 'Last name must only contain letters';
-        }
-      } else {
-        if (!formData.storeName) {
-          newErrors.storeName = 'Store name is required';
-        }
+      if (!formData.full_name) {
+        newErrors.full_name = 'Full name is required';
+      } else if (!/^[A-Za-z\s]+$/.test(formData.full_name)) {
+        newErrors.full_name = 'Full name must only contain letters and spaces';
       }
 
       if (!formData.password) {
@@ -99,10 +85,10 @@ const Login = () => {
         newErrors.confirmPassword = 'Passwords do not match';
       }
 
-      if (formData.profilePicture) {
+      if (formData.profile_picture) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (!allowedTypes.includes(formData.profilePicture.type)) {
-          newErrors.profilePicture = 'Only JPG, JPEG, and PNG formats are allowed';
+        if (!allowedTypes.includes(formData.profile_picture.type)) {
+          newErrors.profile_picture = 'Only JPG, JPEG, and PNG formats are allowed';
         }
       }
     }
@@ -111,16 +97,79 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost:8089/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier: formData.username || formData.email || formData.phone,
+          password: formData.password
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userId', data.user.id);
+        navigate('/profile');
+      } else {
+        setServerError(data.message || 'Login failed');
+      }
+    } catch (error) {
+      setServerError('Network error. Please try again.');
+      console.error('Login error:', error);
+    }
+  };
+
+  const handleSignup = async () => {
+    try {
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key !== 'confirmPassword' && formData[key] !== null) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      const response = await fetch('http://localhost:8089/api/signup', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('Account created successfully! Please login.');
+        setIsLogin(true);
+        setFormData({
+          username: '',
+          password: '',
+          email: '',
+          phone: '',
+          full_name: '',
+          profile_picture: null,
+          confirmPassword: ''
+        });
+      } else {
+        setServerError(data.message || 'Signup failed');
+      }
+    } catch (error) {
+      setServerError('Network error. Please try again.');
+      console.error('Signup error:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form data:', formData);
+      setServerError('');
       if (isLogin) {
-        alert('Login successful!');
-        navigate('/dashboard');
+        await handleLogin();
       } else {
-        alert('Account created successfully! Please verify your email.');
-        setIsLogin(true);
+        await handleSignup();
       }
     }
   };
@@ -134,6 +183,7 @@ const Login = () => {
         <div className={`form-container ${isLogin ? 'login' : 'signup'}`}>
           <div className="form-content">
             <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
+            {serverError && <div className="server-error">{serverError}</div>}
             {isLogin ? (
               <form onSubmit={handleSubmit} className="login-form">
                 <div className="form-group">
@@ -180,7 +230,7 @@ const Login = () => {
                 </p>
               </form>
             ) : (
-              <form onSubmit={handleSubmit} className="signup-form">
+              <form onSubmit={handleSubmit} className="signup-form" encType="multipart/form-data">
                 <div className="two-column">
                   <div className="form-group">
                     <label>Email*</label>
@@ -219,45 +269,17 @@ const Login = () => {
                   {errors.username && <span className="error">{errors.username}</span>}
                 </div>
 
-                {formData.userType === 'customer' ? (
-                  <div className="two-column">
-                    <div className="form-group">
-                      <label>First Name*</label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        placeholder="Enter first name"
-                      />
-                      {errors.firstName && <span className="error">{errors.firstName}</span>}
-                    </div>
-
-                    <div className="form-group">
-                      <label>Last Name*</label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        placeholder="Enter last name"
-                      />
-                      {errors.lastName && <span className="error">{errors.lastName}</span>}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="form-group">
-                    <label>Store Name*</label>
-                    <input
-                      type="text"
-                      name="storeName"
-                      value={formData.storeName}
-                      onChange={handleChange}
-                      placeholder="Enter store name"
-                    />
-                    {errors.storeName && <span className="error">{errors.storeName}</span>}
-                  </div>
-                )}
+                <div className="form-group">
+                  <label>Full Name*</label>
+                  <input
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    placeholder="Enter your full name"
+                  />
+                  {errors.full_name && <span className="error">{errors.full_name}</span>}
+                </div>
 
                 <div className="two-column">
                   <div className="form-group">
@@ -294,11 +316,11 @@ const Login = () => {
                   <label>Profile Picture (Optional)</label>
                   <input
                     type="file"
-                    name="profilePicture"
+                    name="profile_picture"
                     onChange={handleChange}
                     accept="image/*"
                   />
-                  {errors.profilePicture && <span className="error">{errors.profilePicture}</span>}
+                  {errors.profile_picture && <span className="error">{errors.profile_picture}</span>}
                 </div>
 
                 <button type="submit" className="submit-btn">Create Account</button>
