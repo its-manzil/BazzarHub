@@ -75,6 +75,8 @@ const verifyToken = (req, res, next) => {
 };
 
 // Routes
+
+// Authentication Routes
 app.post('/api/signup', upload.single('profile_picture'), async (req, res) => {
   try {
     const { username, email, phone, full_name, password } = req.body;
@@ -95,7 +97,7 @@ app.post('/api/signup', upload.single('profile_picture'), async (req, res) => {
     // Insert new user
     const profilePicture = req.file ? req.file.filename : null;
     
-    const [result] = await db.query(
+    await db.query(
       'INSERT INTO customers (username, email, phone, full_name, password, profile_picture) VALUES (?, ?, ?, ?, ?, ?)',
       [username, email, phone, full_name, hashedPassword, profilePicture]
     );
@@ -150,6 +152,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Profile Routes
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -175,7 +178,6 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Update Profile
 app.put('/api/profile/:id', verifyToken, upload.single('profile_picture'), async (req, res) => {
   try {
     const userId = req.params.id;
@@ -183,7 +185,7 @@ app.put('/api/profile/:id', verifyToken, upload.single('profile_picture'), async
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const { full_name, username, email, phone, currentPassword, newPassword } = req.body;
+    const { full_name, username, email, phone } = req.body;
     
     // Check if new username/email/phone already exists
     const [existing] = await db.query(
@@ -204,20 +206,6 @@ app.put('/api/profile/:id', verifyToken, upload.single('profile_picture'), async
       if (conflict.phone === phone) {
         return res.status(400).json({ field: 'phone', message: 'Phone number already in use' });
       }
-    }
-
-    // Verify current password if changing password
-    if (currentPassword) {
-      const [users] = await db.query('SELECT password FROM customers WHERE id = ?', [userId]);
-      const user = users[0];
-      
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ field: 'currentPassword', message: 'Current password is incorrect' });
-      }
-      
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await db.query('UPDATE customers SET password = ? WHERE id = ?', [hashedPassword, userId]);
     }
 
     // Update profile
@@ -245,7 +233,71 @@ app.put('/api/profile/:id', verifyToken, upload.single('profile_picture'), async
   }
 });
 
-// Get User Orders
+app.put('/api/profile/:id/password', verifyToken, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    if (parseInt(userId) !== req.userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    
+    // Get current password hash
+    const [users] = await db.query('SELECT password FROM customers WHERE id = ?', [userId]);
+    const user = users[0];
+    
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ field: 'currentPassword', message: 'Current password is incorrect' });
+    }
+    
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update password
+    await db.query('UPDATE customers SET password = ? WHERE id = ?', [hashedPassword, userId]);
+    
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ message: 'Error changing password' });
+  }
+});
+
+app.delete('/api/profile/:id', verifyToken, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    if (parseInt(userId) !== req.userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const { password } = req.body;
+    
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required' });
+    }
+
+    // Verify password
+    const [users] = await db.query('SELECT password FROM customers WHERE id = ?', [userId]);
+    const user = users[0];
+    
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect password' });
+    }
+
+    // Delete user account
+    await db.query('DELETE FROM customers WHERE id = ?', [userId]);
+    
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ message: 'Error deleting account' });
+  }
+});
+
+// Order Routes
 app.get('/api/orders/:userId', verifyToken, async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -265,6 +317,42 @@ app.get('/api/orders/:userId', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Orders error:', error);
     res.status(500).json({ message: 'Error fetching orders' });
+  }
+});
+
+app.put('/api/orders/:orderId/cancel', verifyToken, async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    
+    // Verify the order belongs to the user
+    const [orders] = await db.query(
+      'SELECT customer_id, order_status FROM orders WHERE order_id = ?',
+      [orderId]
+    );
+    
+    if (orders.length === 0) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    if (orders[0].customer_id !== req.userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    
+    // Check if order can be cancelled (only pending orders)
+    if (orders[0].order_status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+    }
+    
+    // Update order status
+    await db.query(
+      'UPDATE orders SET order_status = "cancelled" WHERE order_id = ?',
+      [orderId]
+    );
+    
+    res.json({ message: 'Order cancelled successfully' });
+  } catch (error) {
+    console.error('Cancel order error:', error);
+    res.status(500).json({ message: 'Error cancelling order' });
   }
 });
 

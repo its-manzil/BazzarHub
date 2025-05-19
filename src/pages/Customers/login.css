@@ -1,7 +1,38 @@
 /* login.css */
 
+<<<<<<< HEAD
 
 /* Scoped Variables */
+=======
+/* Base Styles */
+:root {
+  --primary-color: #4361ee;
+  --primary-hover: #3a56d4;
+  --secondary-color: #f8f9fa;
+  --text-color: #333;
+  --light-text: #6c757d;
+  --border-color: #dee2e6;
+  --error-color: #dc3545;
+  --success-color: #28a745;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: #f5f7ff;
+}
+
+/* Login Container */
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
 .login-container {
   display: flex;
   justify-content: center;
@@ -27,15 +58,16 @@
 /* Form Container */
 .login-container .form-container {
   display: flex;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  background-color: white;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: var(--box-shadow);
   max-width: 900px;
   width: 100%;
   animation: fadeIn 0.5s ease-out;
 }
 
+<<<<<<< HEAD
 .login-container .form-content {
   flex: 1;
   padding: 2.5rem;
@@ -45,23 +77,48 @@
 
 .login-container .image-container {
   flex: 1;
+=======
+.form-content {
+  padding: 2.5rem;
+  flex: 1;
+  min-width: 400px;
+}
+
+.image-container {
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #e0f2ff 0%, #f0f7ff 100%);
+  padding: 1rem;
 }
 
+<<<<<<< HEAD
 .login-container .image-container img {
   width: 100%;
+=======
+.image-container img {
+  max-width: 100%;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
   height: auto;
-  object-fit: cover;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
+<<<<<<< HEAD
 /* Typography */
 .login-container h2 {
   margin-bottom: 1.5rem;
   font-size: 1.8rem;
   color: var(--text-color);
+=======
+/* Form Elements */
+h2 {
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
   text-align: center;
 }
 
@@ -81,7 +138,7 @@
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border-radius: 6px;
   font-size: 1rem;
   transition: var(--transition);
   background-color: #fff;
@@ -91,7 +148,11 @@
 .login-container .form-group input:focus {
   outline: none;
   border-color: var(--primary-color);
+<<<<<<< HEAD
   box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+=======
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
 }
 
 /* Password Input */
@@ -99,8 +160,13 @@
   position: relative;
 }
 
+<<<<<<< HEAD
 .login-container .password-input input {
   padding-right: 3rem;
+=======
+.password-input input {
+  padding-right: 3.5rem;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
 }
 
 .login-container .show-password {
@@ -110,14 +176,26 @@
   transform: translateY(-50%);
   background: none;
   border: none;
+<<<<<<< HEAD
   color: var(--text-color);
+=======
+  color: var(--primary-color);
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
   cursor: pointer;
   font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
   transition: var(--transition);
 }
 
+<<<<<<< HEAD
 .login-container .show-password:hover {
   color: var(--primary-color);
+=======
+.show-password:hover {
+  background-color: rgba(67, 97, 238, 0.1);
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
 }
 
 /* Layout */
@@ -127,6 +205,7 @@
   gap: 1rem;
 }
 
+<<<<<<< HEAD
 /* Buttons */
 .login-container .submit-btn {
   width: 100%;
@@ -146,6 +225,8 @@
   background-color: var(--primary-hover);
 }
 
+=======
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
 /* Remember Me & Forgot Password */
 .login-container .remember-forgot {
   display: flex;
@@ -154,7 +235,17 @@
   margin: 1rem 0;
 }
 
+<<<<<<< HEAD
 .login-container .remember-forgot input[type="checkbox"] {
+=======
+.remember-forgot div {
+  display: flex;
+  align-items: center;
+}
+
+.remember-forgot input[type="checkbox"] {
+  width: auto;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
   margin-right: 0.5rem;
 }
 
@@ -162,10 +253,31 @@
   color: var(--primary-color);
   text-decoration: none;
   font-size: 0.9rem;
+  transition: var(--transition);
 }
 
 .login-container .remember-forgot a:hover {
   text-decoration: underline;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 0.5rem;
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 /* Toggle Form */
@@ -182,6 +294,7 @@
   cursor: pointer;
   font-weight: 500;
   margin-left: 0.5rem;
+  transition: var(--transition);
 }
 
 .login-container .toggle-form button:hover {
@@ -191,17 +304,37 @@
 /* Error Messages */
 .login-container .error {
   display: block;
-  margin-top: 0.5rem;
   color: var(--error-color);
   font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.server-error {
+  color: var(--error-color);
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 /* File Input */
+<<<<<<< HEAD
 .login-container input[type="file"] {
   padding: 0.5rem;
   border: 1px dashed var(--border-color);
   background-color: var(--secondary-color);
   color: var(--text-color);
+=======
+.form-group input[type="file"] {
+  padding: 0.5rem;
+  border: 1px dashed var(--border-color);
+}
+
+.form-group input[type="file"]:focus {
+  border-style: solid;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
 }
 
 /* Responsive Design */
@@ -214,7 +347,12 @@
     display: none;
   }
 
+<<<<<<< HEAD
   .login-container .form-content {
+=======
+  .form-content {
+    min-width: auto;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
     padding: 1.5rem;
   }
 
@@ -224,6 +362,7 @@
   }
 }
 
+<<<<<<< HEAD
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -265,6 +404,15 @@
     background-color: #2c2c2c;
     color: #f1f1f1;
     border-color: #444;
+=======
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1rem;
+  }
+
+  .form-content {
+    padding: 1.25rem;
+>>>>>>> 1319ef9b58a57f91804af0271861b7bc2a88dcf9
   }
 
   .login-container input[type="file"] {
