@@ -12,14 +12,13 @@ import { createBrowserRouter, RouterProvider, } from "react-router-dom";
 import Checkout from "./pages/Customers/Checkout";
 import Profile from "./pages/Customers/Profile";
 import Store from "./pages/Customers/Store";
-
-
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AddProducts from "./pages/Admin/Products/AddProducts";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
   {
     path: "/",
-    
     element: <Home />,
   },
   {
@@ -56,6 +55,14 @@ const router = createBrowserRouter([
     path: "Store",
     element: <Store/>
   },
+  {
+    path: "AdminDashboard",
+    element: <AdminDashboard/>
+  },
+  {
+    path:"AddProducts",
+    element: <AddProducts/>
+  }
 
   
 ]);

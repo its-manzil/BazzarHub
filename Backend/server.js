@@ -20,7 +20,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // File upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, '/Users/manzil/Developer/All-Projects/BazzarHub/Backend/uploads');
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -353,6 +353,71 @@ app.put('/api/orders/:orderId/cancel', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Cancel order error:', error);
     res.status(500).json({ message: 'Error cancelling order' });
+  }
+});
+
+
+/*----------------Testing backends-------------- */
+app.post('/api/products', verifyToken, upload.array('images', 5), async (req, res) => {
+  try {
+    const { 
+      product_name, 
+      brand, 
+      description, 
+      variants // No need to parse again
+    } = JSON.parse(req.body.productData);
+    
+    // Start transaction
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // 1. Create the base product
+      const [productResult] = await connection.query(
+        'INSERT INTO products (product_name, brand, description) VALUES (?, ?, ?)',
+        [product_name, brand, description]
+      );
+      const productId = productResult.insertId;
+
+      // 2. Add variants (no need to parse again)
+      for (const variant of variants) {
+        await connection.query(
+          `INSERT INTO product_variants 
+          (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity, sku)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            productId,
+            variant.variant_name || 'Size',
+            variant.variant_value,
+            variant.marked_price,
+            variant.selling_price,
+            variant.stock_quantity,
+            variant.sku || `${productId}-${variant.variant_value}`
+          ]
+        );
+      }
+
+      // 3. Upload images - use req.files (handled by multer)
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          await connection.query(
+            'INSERT INTO item_images (product_id, image_url) VALUES (?, ?)',
+            [productId, file.filename]
+          );
+        }
+      }
+
+      await connection.commit();
+      res.status(201).json({ productId, message: 'Product created successfully' });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Add product error:', error);
+    res.status(500).json({ message: 'Error creating product' });
   }
 });
 
