@@ -46,7 +46,7 @@ const upload = multer({
 const db = mysql.createPool({
   host: "localhost",
   user: "root",
-  password: "",
+  password: "manjil@123",
   database: "BazzarHub",
   waitForConnections: true,
   connectionLimit: 10,

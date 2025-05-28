@@ -85,5 +85,5 @@ CREATE TABLE IF NOT EXISTS item_category_mapping (
 
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
-packages to be install after creating server.js:
-npm install express mysql2 body-parser cors multer bcrypt jsonwebtoken dotenv
+
+use "npm install" to install all packages needed in react as well as server side.
