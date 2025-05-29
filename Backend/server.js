@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require("express");
 const mysql = require("mysql2/promise");
 const bodyParser = require("body-parser");
@@ -7,9 +6,16 @@ const multer = require("multer");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const app = express();
 const port = 8099;
+
+// Generate a secure random secret key for JWT at startup
+const generateSecretKey = () => {
+  return crypto.randomBytes(64).toString('hex');
+};
+const JWT_SECRET = generateSecretKey();
 
 // Middleware
 app.use(bodyParser.json());
@@ -52,9 +58,6 @@ const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
-
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Verify Token Middleware
 const verifyToken = (req, res, next) => {
@@ -356,104 +359,91 @@ app.put('/api/orders/:orderId/cancel', verifyToken, async (req, res) => {
   }
 });
 
+// Add this to your server.js after the other routes
 
-/*----------------Testing backends -------------- */
-// Product Routes
-// Add Product Endpoint
-app.post('/api/products', verifyToken, upload.array('images', 5), async (req, res) => {
+// Products Routes
+app.post('/api/products', upload.array('images', 5), async (req, res) => {
   try {
+    // Extract form data
     const { productName, brand, category, description, variants } = req.body;
-    const images = req.files;
-
+    
+    // Basic validation
     if (!productName || !brand || !category || !description || !variants) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
-    if (!images || images.length === 0) {
-      return res.status(400).json({ message: 'At least one image is required' });
-    }
-
-    // Parse variants
-    const parsedVariants = JSON.parse(variants);
-    if (!Array.isArray(parsedVariants) || parsedVariants.length === 0) {
-      return res.status(400).json({ message: 'At least one variant is required' });
-    }
-
-    // Start transaction
-    const connection = await db.getConnection();
-    await connection.beginTransaction();
-
-    try {
-      // Insert product
-      const [productResult] = await connection.query(
-        'INSERT INTO products (product_name, brand, description) VALUES (?, ?, ?)',
-        [productName, brand, description]
-      );
-      const productId = productResult.insertId;
-
-      // Insert category mapping (assuming categories table is populated)
-      const [categoryResult] = await connection.query(
-        'SELECT category_id FROM categories WHERE category_name = ?',
-        [category]
-      );
-
-      if (categoryResult.length > 0) {
-        await connection.query(
-          'INSERT INTO item_category_mapping (item_id, category_id) VALUES (?, ?)',
-          [productId, categoryResult[0].category_id]
-        );
-      }
-
-      // Insert variants
-      for (const variant of parsedVariants) {
-        await connection.query(
-          'INSERT INTO product_variants (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity) VALUES (?, ?, ?, ?, ?, ?)',
-          [
-            productId,
-            variant.type,
-            variant.value,
-            variant.markedPrice,
-            variant.sellingPrice,
-            variant.stockQuantity
-          ]
-        );
-      }
-
-      // Insert images
-      for (const image of images) {
-        await connection.query(
+    // Create product in database
+    const [productResult] = await db.query(
+      'INSERT INTO products (product_name, brand, category, description) VALUES (?, ?, ?, ?)',
+      [productName, brand, category, description]
+    );
+    
+    const productId = productResult.insertId;
+    
+    // Process uploaded images
+    const imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        await db.query(
           'INSERT INTO item_images (product_id, image_url) VALUES (?, ?)',
-          [productId, image.filename]
+          [productId, file.filename]
         );
+        imageUrls.push(file.filename);
+      }
+    }
+
+    // Process product variants
+    let parsedVariants;
+    try {
+      parsedVariants = JSON.parse(variants);
+      if (!Array.isArray(parsedVariants)) {
+        throw new Error('Variants must be an array');
+      }
+    } catch (e) {
+      return res.status(400).json({ message: 'Invalid variants format' });
+    }
+
+    for (const variant of parsedVariants) {
+      // Validate variant data
+      if (!variant.type || !variant.value || !variant.markedPrice || !variant.sellingPrice || !variant.stockQuantity) {
+        return res.status(400).json({ message: 'All variant fields are required' });
       }
 
-      // Commit transaction
-      await connection.commit();
-      connection.release();
-
-      res.status(201).json({ message: 'Product added successfully', productId });
-    } catch (error) {
-      await connection.rollback();
-      connection.release();
-      throw error;
+      await db.query(
+        `INSERT INTO product_variants 
+        (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity) 
+        VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          productId,
+          variant.type,
+          variant.value,
+          variant.markedPrice,
+          variant.sellingPrice,
+          variant.stockQuantity
+        ]
+      );
     }
+    
+    // Success response
+    res.status(201).json({ 
+      success: true,
+      message: 'Product created successfully',
+      productId,
+      imageUrls
+    });
+    
   } catch (error) {
-    console.error('Add product error:', error);
-    res.status(500).json({ message: 'Error adding product' });
+    console.error('Product creation error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error creating product',
+      error: error.message
+    });
   }
 });
 
-// Get all products (for testing)
-app.get('/api/products', async (req, res) => {
-  try {
-    const [products] = await db.query('SELECT * FROM products');
-    res.json({ products });
-  } catch (error) {
-    console.error('Get products error:', error);
-    res.status(500).json({ message: 'Error fetching products' });
-  }
-});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
+  console.log(`JWT Secret: ${JWT_SECRET.substring(0, 10)}... (only shown for debugging)`);
 });

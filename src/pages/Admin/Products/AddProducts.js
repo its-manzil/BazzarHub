@@ -1,9 +1,8 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import './AddProducts.css';
-
+import Navbar from '../Navbar';
 const AddProducts = () => {
-  // Form state
   const [formData, setFormData] = useState({
     productName: '',
     brand: '',
@@ -25,36 +24,21 @@ const AddProducts = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
   const fileInputRef = useRef(null);
 
-  // Category options
   const categories = [
-    'Clothing',
-    'Electronics',
-    'Sports',
-    'Jewelry',
-    'Medicines',
-    'Home & Kitchen',
-    'Beauty',
-    'Books',
-    'Toys',
-    'Automotive'
+    'Clothing', 'Electronics', 'Sports', 'Jewelry', 'Medicines',
+    'Home & Kitchen', 'Beauty', 'Books', 'Toys', 'Automotive'
   ];
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle image upload
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files).slice(0, 5 - formData.images.length);
-    
+
     if (files.length + formData.images.length > 5) {
       setError('You can upload a maximum of 5 images');
       return;
@@ -71,36 +55,22 @@ const AddProducts = () => {
     }));
   };
 
-  // Remove an image
   const removeImage = (index) => {
     const newImages = [...formData.images];
     newImages.splice(index, 1);
-    setFormData(prev => ({
-      ...prev,
-      images: newImages
-    }));
+    setFormData(prev => ({ ...prev, images: newImages }));
   };
 
-  // Handle variant type change
   const handleVariantTypeChange = (e) => {
     setVariantType(e.target.value);
-    setCurrentVariant(prev => ({
-      ...prev,
-      type: e.target.value,
-      value: ''
-    }));
+    setCurrentVariant(prev => ({ ...prev, type: e.target.value, value: '' }));
   };
 
-  // Handle variant input changes
   const handleVariantChange = (e) => {
     const { name, value } = e.target;
-    setCurrentVariant(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setCurrentVariant(prev => ({ ...prev, [name]: value }));
   };
 
-  // Add a variant to the product
   const addVariant = () => {
     if (!currentVariant.value || !currentVariant.markedPrice || !currentVariant.sellingPrice || !currentVariant.stockQuantity) {
       setError('Please fill all variant fields');
@@ -125,7 +95,6 @@ const AddProducts = () => {
       variants: [...prev.variants, newVariant]
     }));
 
-    // Reset current variant
     setCurrentVariant({
       type: variantType,
       value: '',
@@ -137,24 +106,19 @@ const AddProducts = () => {
     setError('');
   };
 
-  // Remove a variant
   const removeVariant = (index) => {
     const newVariants = [...formData.variants];
     newVariants.splice(index, 1);
-    setFormData(prev => ({
-      ...prev,
-      variants: newVariants
-    }));
+    setFormData(prev => ({ ...prev, variants: newVariants }));
   };
 
-  // Submit the form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     setSuccess('');
 
-    // Validation
+    // Basic validation
     if (!formData.productName || !formData.brand || !formData.category || !formData.description) {
       setError('Please fill all required fields');
       setIsLoading(false);
@@ -174,26 +138,22 @@ const AddProducts = () => {
     }
 
     try {
-      // Create FormData for file uploads
       const formDataToSend = new FormData();
       formDataToSend.append('productName', formData.productName);
       formDataToSend.append('brand', formData.brand);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('description', formData.description);
-      
-      // Append images
-      formData.images.forEach((image, index) => {
-        formDataToSend.append(`images`, image.file);
+
+      formData.images.forEach(image => {
+        formDataToSend.append('images', image.file);
       });
 
-      // Append variants as JSON string
       formDataToSend.append('variants', JSON.stringify(formData.variants));
 
-      // Send to backend
-      const response = await axios.post('/api/products', formDataToSend, {
+      // Simplified request without token
+      await axios.post('http://localhost:8099/api/products', formDataToSend, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'multipart/form-data'
         }
       });
 
@@ -211,18 +171,21 @@ const AddProducts = () => {
       
     } catch (err) {
       console.error('Error adding product:', err);
-      setError(err.response?.data?.message || 'Failed to add product');
+      setError(err.response?.data?.message || err.message || 'Failed to add product');
     } finally {
       setIsLoading(false);
     }
   };
 
+
   return (
-    <div className="add-products-container">
-      <h1 className="add-products-title">Add New Product</h1>
-      
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
+    <>
+    <Navbar/>
+      <div className="add-products-container">
+        <h1 className="add-products-title">Add New Product</h1>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
       
       <form onSubmit={handleSubmit} className="add-products-form">
         {/* Product Basic Information */}
@@ -487,6 +450,7 @@ const AddProducts = () => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 
