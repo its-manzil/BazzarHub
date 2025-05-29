@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import './AddProducts.css';
+
 const AddProducts = () => {
   // Form state
   const [formData, setFormData] = useState({
@@ -217,49 +218,49 @@ const AddProducts = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Add New Product</h1>
+    <div className="add-products-container">
+      <h1 className="add-products-title">Add New Product</h1>
       
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-      {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="add-products-form">
         {/* Product Basic Information */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
+        <div className="form-section">
+          <h2 className="section-title">Basic Information</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+          <div className="form-grid">
+            <div className="form-group">
+              <label className="form-label">Product Name *</label>
               <input
                 type="text"
                 name="productName"
                 value={formData.productName}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
                 required
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
+            <div className="form-group">
+              <label className="form-label">Brand *</label>
               <input
                 type="text"
                 name="brand"
                 value={formData.brand}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
                 required
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+            <div className="form-group">
+              <label className="form-label">Category *</label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
                 required
               >
                 <option value="">Select a category</option>
@@ -270,36 +271,36 @@ const AddProducts = () => {
             </div>
           </div>
           
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+          <div className="form-group">
+            <label className="form-label">Description *</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
               rows="4"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-textarea"
               required
             ></textarea>
           </div>
         </div>
         
         {/* Product Images */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Images</h2>
-          <p className="text-sm text-gray-500 mb-4">Upload up to 5 images (first image will be the main image)</p>
+        <div className="form-section">
+          <h2 className="section-title">Images</h2>
+          <p className="section-description">Upload up to 5 images (first image will be the main image)</p>
           
-          <div className="flex flex-wrap gap-4 mb-4">
+          <div className="images-container">
             {formData.images.map((image, index) => (
-              <div key={index} className="relative">
+              <div key={index} className="image-preview-container">
                 <img 
                   src={image.preview} 
                   alt={`Preview ${index + 1}`} 
-                  className="w-24 h-24 object-cover rounded-md"
+                  className="image-preview"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                  className="remove-image-button"
                 >
                   ×
                 </button>
@@ -308,15 +309,15 @@ const AddProducts = () => {
             
             {formData.images.length < 5 && (
               <div 
-                className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer"
+                className="image-upload-placeholder"
                 onClick={() => fileInputRef.current.click()}
               >
-                <span className="text-gray-400">+</span>
+                <span className="placeholder-icon">+</span>
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleImageUpload}
-                  className="hidden"
+                  className="hidden-file-input"
                   accept="image/*"
                   multiple
                 />
@@ -325,11 +326,11 @@ const AddProducts = () => {
           </div>
           
           {formData.images.length < 5 && (
-            <div className="mt-2">
+            <div className="upload-more-container">
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="upload-more-button"
               >
                 {formData.images.length === 0 ? 'Upload Images' : 'Upload More Images'}
               </button>
@@ -338,36 +339,36 @@ const AddProducts = () => {
         </div>
         
         {/* Product Variants */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Variants</h2>
+        <div className="form-section">
+          <h2 className="section-title">Variants</h2>
           
-          <div className="space-y-4">
+          <div className="variants-container">
             {formData.variants.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+              <div className="variants-table-container">
+                <table className="variants-table">
+                  <thead className="table-header">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marked Price</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="table-header-cell">Type</th>
+                      <th className="table-header-cell">Value</th>
+                      <th className="table-header-cell">Marked Price</th>
+                      <th className="table-header-cell">Selling Price</th>
+                      <th className="table-header-cell">Stock</th>
+                      <th className="table-header-cell">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="table-body">
                     {formData.variants.map((variant, index) => (
-                      <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{variant.type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{variant.value}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${variant.markedPrice.toFixed(2)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${variant.sellingPrice.toFixed(2)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{variant.stockQuantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <tr key={index} className="table-row">
+                        <td className="table-cell capitalize">{variant.type}</td>
+                        <td className="table-cell">{variant.value}</td>
+                        <td className="table-cell">${variant.markedPrice.toFixed(2)}</td>
+                        <td className="table-cell">${variant.sellingPrice.toFixed(2)}</td>
+                        <td className="table-cell">{variant.stockQuantity}</td>
+                        <td className="table-cell">
                           <button
                             type="button"
                             onClick={() => removeVariant(index)}
-                            className="text-red-600 hover:text-red-900"
+                            className="remove-variant-button"
                           >
                             Remove
                           </button>
@@ -379,24 +380,24 @@ const AddProducts = () => {
               </div>
             )}
             
-            <div className="bg-gray-50 p-4 rounded-md">
-              <h3 className="text-md font-medium mb-3">Add New Variant</h3>
+            <div className="add-variant-container">
+              <h3 className="add-variant-title">Add New Variant</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Variant Type</label>
+              <div className="variant-input-grid">
+                <div className="form-group">
+                  <label className="form-label">Variant Type</label>
                   <select
                     value={variantType}
                     onChange={handleVariantTypeChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                   >
                     <option value="size">Size</option>
                     <option value="color">Color</option>
                   </select>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="form-group">
+                  <label className="form-label">
                     {variantType === 'size' ? 'Size' : 'Color'} *
                   </label>
                   <input
@@ -405,18 +406,16 @@ const AddProducts = () => {
                     value={currentVariant.value}
                     onChange={handleVariantChange}
                     placeholder={variantType === 'size' ? 'e.g., XL, 10, etc.' : 'e.g., Red, Blue, etc.'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                   />
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Marked Price *</label>
-                  <div className="relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
+              <div className="variant-price-grid">
+                <div className="form-group">
+                  <label className="form-label">Marked Price *</label>
+                  <div className="price-input-container">
+                    <span className="price-symbol">$</span>
                     <input
                       type="number"
                       name="markedPrice"
@@ -424,18 +423,16 @@ const AddProducts = () => {
                       onChange={handleVariantChange}
                       min="0"
                       step="0.01"
-                      className="block w-full pl-7 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="price-input"
                       placeholder="0.00"
                     />
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label>
-                  <div className="relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
+                <div className="form-group">
+                  <label className="form-label">Selling Price *</label>
+                  <div className="price-input-container">
+                    <span className="price-symbol">$</span>
                     <input
                       type="number"
                       name="sellingPrice"
@@ -443,21 +440,21 @@ const AddProducts = () => {
                       onChange={handleVariantChange}
                       min="0"
                       step="0.01"
-                      className="block w-full pl-7 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="price-input"
                       placeholder="0.00"
                     />
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
+                <div className="form-group">
+                  <label className="form-label">Stock Quantity *</label>
                   <input
                     type="number"
                     name="stockQuantity"
                     value={currentVariant.stockQuantity}
                     onChange={handleVariantChange}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                   />
                 </div>
               </div>
@@ -465,7 +462,7 @@ const AddProducts = () => {
               <button
                 type="button"
                 onClick={addVariant}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="add-variant-button"
               >
                 Add Variant
               </button>
@@ -474,18 +471,15 @@ const AddProducts = () => {
         </div>
         
         {/* Submit Button */}
-        <div className="flex justify-end">
+        <div className="submit-button-container">
           <button
             type="submit"
             disabled={isLoading}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300"
+            className="submit-button"
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <span className="spinner"></span>
                 Processing...
               </>
             ) : 'Add Product'}
