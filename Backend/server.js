@@ -357,70 +357,102 @@ app.put('/api/orders/:orderId/cancel', verifyToken, async (req, res) => {
 });
 
 
-/*----------------Testing backends-------------- */
+/*----------------Testing backends -------------- */
+// Product Routes
+// Add Product Endpoint
 app.post('/api/products', verifyToken, upload.array('images', 5), async (req, res) => {
   try {
-    const { 
-      product_name, 
-      brand, 
-      description, 
-      variants // No need to parse again
-    } = JSON.parse(req.body.productData);
-    
+    const { productName, brand, category, description, variants } = req.body;
+    const images = req.files;
+
+    if (!productName || !brand || !category || !description || !variants) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    if (!images || images.length === 0) {
+      return res.status(400).json({ message: 'At least one image is required' });
+    }
+
+    // Parse variants
+    const parsedVariants = JSON.parse(variants);
+    if (!Array.isArray(parsedVariants) || parsedVariants.length === 0) {
+      return res.status(400).json({ message: 'At least one variant is required' });
+    }
+
     // Start transaction
     const connection = await db.getConnection();
     await connection.beginTransaction();
 
     try {
-      // 1. Create the base product
+      // Insert product
       const [productResult] = await connection.query(
         'INSERT INTO products (product_name, brand, description) VALUES (?, ?, ?)',
-        [product_name, brand, description]
+        [productName, brand, description]
       );
       const productId = productResult.insertId;
 
-      // 2. Add variants (no need to parse again)
-      for (const variant of variants) {
+      // Insert category mapping (assuming categories table is populated)
+      const [categoryResult] = await connection.query(
+        'SELECT category_id FROM categories WHERE category_name = ?',
+        [category]
+      );
+
+      if (categoryResult.length > 0) {
         await connection.query(
-          `INSERT INTO product_variants 
-          (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity, sku)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          'INSERT INTO item_category_mapping (item_id, category_id) VALUES (?, ?)',
+          [productId, categoryResult[0].category_id]
+        );
+      }
+
+      // Insert variants
+      for (const variant of parsedVariants) {
+        await connection.query(
+          'INSERT INTO product_variants (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity) VALUES (?, ?, ?, ?, ?, ?)',
           [
             productId,
-            variant.variant_name || 'Size',
-            variant.variant_value,
-            variant.marked_price,
-            variant.selling_price,
-            variant.stock_quantity,
-            variant.sku || `${productId}-${variant.variant_value}`
+            variant.type,
+            variant.value,
+            variant.markedPrice,
+            variant.sellingPrice,
+            variant.stockQuantity
           ]
         );
       }
 
-      // 3. Upload images - use req.files (handled by multer)
-      if (req.files && req.files.length > 0) {
-        for (const file of req.files) {
-          await connection.query(
-            'INSERT INTO item_images (product_id, image_url) VALUES (?, ?)',
-            [productId, file.filename]
-          );
-        }
+      // Insert images
+      for (const image of images) {
+        await connection.query(
+          'INSERT INTO item_images (product_id, image_url) VALUES (?, ?)',
+          [productId, image.filename]
+        );
       }
 
+      // Commit transaction
       await connection.commit();
-      res.status(201).json({ productId, message: 'Product created successfully' });
+      connection.release();
+
+      res.status(201).json({ message: 'Product added successfully', productId });
     } catch (error) {
       await connection.rollback();
-      throw error;
-    } finally {
       connection.release();
+      throw error;
     }
   } catch (error) {
     console.error('Add product error:', error);
-    res.status(500).json({ message: 'Error creating product' });
+    res.status(500).json({ message: 'Error adding product' });
   }
 });
 
+// Get all products (for testing)
+app.get('/api/products', async (req, res) => {
+  try {
+    const [products] = await db.query('SELECT * FROM products');
+    res.json({ products });
+  } catch (error) {
+    console.error('Get products error:', error);
+    res.status(500).json({ message: 'Error fetching products' });
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

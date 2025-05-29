@@ -120,7 +120,7 @@ ALTER TABLE item_images
     ADD CONSTRAINT fk_product_images
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE;
 
-    
+ALTER TABLE products ADD category VARCHAR(255) DEFAULT 'Uncategorized';
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 

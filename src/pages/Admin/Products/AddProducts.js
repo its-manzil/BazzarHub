@@ -1,439 +1,498 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { FaPlus, FaMinus, FaTrash, FaUpload } from 'react-icons/fa';
 import './AddProducts.css';
-import Navbar from '../Navbar';
-
 const AddProducts = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [imageFiles, setImageFiles] = useState([]);
-  
-  // Variant type options
-  const variantTypes = [
-    { value: 'Size', label: 'Size' },
-    { value: 'Color', label: 'Color' }
-  ];
-
-  // Main product form state
-  const [product, setProduct] = useState({
-    product_name: '',
+  // Form state
+  const [formData, setFormData] = useState({
+    productName: '',
     brand: '',
+    category: '',
     description: '',
-    variants: [{
-      variant_type: 'Size', // Default to Size
-      variant_value: '',
-      marked_price: '',
-      selling_price: '',
-      stock_quantity: '',
-      sku: ''
-    }],
-    images: []
+    images: [],
+    variants: []
   });
 
+  const [variantType, setVariantType] = useState('size');
+  const [currentVariant, setCurrentVariant] = useState({
+    type: 'size',
+    value: '',
+    markedPrice: '',
+    sellingPrice: '',
+    stockQuantity: ''
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const fileInputRef = useRef(null);
+
+  // Category options
+  const categories = [
+    'Clothing',
+    'Electronics',
+    'Sports',
+    'Jewelry',
+    'Medicines',
+    'Home & Kitchen',
+    'Beauty',
+    'Books',
+    'Toys',
+    'Automotive'
+  ];
+
   // Handle input changes
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProduct(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle variant changes
-  const handleVariantChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedVariants = [...product.variants];
-    updatedVariants[index] = { ...updatedVariants[index], [name]: value };
-    
-    // Auto-calculate selling price if marked price changes
-    if (name === 'marked_price') {
-      const discount = updatedVariants[index].selling_price 
-        ? (updatedVariants[index].marked_price - updatedVariants[index].selling_price) 
-        : 0;
-      updatedVariants[index].selling_price = (parseFloat(value) - discount).toFixed(2);
-    }
-    
-    setProduct(prev => ({ ...prev, variants: updatedVariants }));
-  };
-
-  // Add new variant
-  const addVariant = () => {
-    setProduct(prev => ({
+    setFormData(prev => ({
       ...prev,
-      variants: [
-        ...prev.variants,
-        {
-          variant_type: 'Size', // Default to Size
-          variant_value: '',
-          marked_price: '',
-          selling_price: '',
-          stock_quantity: '',
-          sku: ''
-        }
-      ]
+      [name]: value
     }));
   };
 
-  // Remove variant
-  const removeVariant = (index) => {
-    if (product.variants.length <= 1) return;
-    const updatedVariants = [...product.variants];
-    updatedVariants.splice(index, 1);
-    setProduct(prev => ({ ...prev, variants: updatedVariants }));
-  };
-
   // Handle image upload
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length + product.images.length > 5) {
-      setError('Maximum 5 images allowed');
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files).slice(0, 5 - formData.images.length);
+    
+    if (files.length + formData.images.length > 5) {
+      setError('You can upload a maximum of 5 images');
       return;
     }
 
-    try {
-      const uploadedImages = [];
-      const newImageFiles = [];
-      
-      for (const file of files) {
-        uploadedImages.push(URL.createObjectURL(file));
-        newImageFiles.push(file);
-      }
-      
-      setProduct(prev => ({ ...prev, images: [...prev.images, ...uploadedImages] }));
-      setImageFiles(prev => [...prev, ...newImageFiles]);
-    } catch (err) {
-      setError('Error uploading images');
-    }
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...newImages]
+    }));
   };
 
-  // Remove image
+  // Remove an image
   const removeImage = (index) => {
-    const updatedImages = [...product.images];
-    const updatedFiles = [...imageFiles];
-    updatedImages.splice(index, 1);
-    updatedFiles.splice(index, 1);
-    setProduct(prev => ({ ...prev, images: updatedImages }));
-    setImageFiles(updatedFiles);
+    const newImages = [...formData.images];
+    newImages.splice(index, 1);
+    setFormData(prev => ({
+      ...prev,
+      images: newImages
+    }));
   };
 
-  // Form submission
+  // Handle variant type change
+  const handleVariantTypeChange = (e) => {
+    setVariantType(e.target.value);
+    setCurrentVariant(prev => ({
+      ...prev,
+      type: e.target.value,
+      value: ''
+    }));
+  };
+
+  // Handle variant input changes
+  const handleVariantChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentVariant(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Add a variant to the product
+  const addVariant = () => {
+    if (!currentVariant.value || !currentVariant.markedPrice || !currentVariant.sellingPrice || !currentVariant.stockQuantity) {
+      setError('Please fill all variant fields');
+      return;
+    }
+
+    if (parseFloat(currentVariant.sellingPrice) > parseFloat(currentVariant.markedPrice)) {
+      setError('Selling price cannot be higher than marked price');
+      return;
+    }
+
+    const newVariant = {
+      type: currentVariant.type,
+      value: currentVariant.value,
+      markedPrice: parseFloat(currentVariant.markedPrice),
+      sellingPrice: parseFloat(currentVariant.sellingPrice),
+      stockQuantity: parseInt(currentVariant.stockQuantity)
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      variants: [...prev.variants, newVariant]
+    }));
+
+    // Reset current variant
+    setCurrentVariant({
+      type: variantType,
+      value: '',
+      markedPrice: '',
+      sellingPrice: '',
+      stockQuantity: ''
+    });
+
+    setError('');
+  };
+
+  // Remove a variant
+  const removeVariant = (index) => {
+    const newVariants = [...formData.variants];
+    newVariants.splice(index, 1);
+    setFormData(prev => ({
+      ...prev,
+      variants: newVariants
+    }));
+  };
+
+  // Submit the form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
     setError('');
+    setSuccess('');
 
-    // Validate form
-    if (!product.product_name.trim()) {
-      setError('Product name is required');
-      setLoading(false);
+    // Validation
+    if (!formData.productName || !formData.brand || !formData.category || !formData.description) {
+      setError('Please fill all required fields');
+      setIsLoading(false);
       return;
     }
 
-    if (!product.brand.trim()) {
-      setError('Brand is required');
-      setLoading(false);
+    if (formData.images.length === 0) {
+      setError('Please upload at least one image');
+      setIsLoading(false);
       return;
     }
 
-    for (const variant of product.variants) {
-      if (!variant.variant_value.trim()) {
-        setError('Variant value is required for all variants');
-        setLoading(false);
-        return;
-      }
-      if (!variant.marked_price || parseFloat(variant.marked_price) <= 0) {
-        setError('Marked price must be greater than 0');
-        setLoading(false);
-        return;
-      }
-      if (!variant.selling_price || parseFloat(variant.selling_price) <= 0) {
-        setError('Selling price must be greater than 0');
-        setLoading(false);
-        return;
-      }
-      if (parseFloat(variant.selling_price) > parseFloat(variant.marked_price)) {
-        setError('Selling price cannot be greater than marked price');
-        setLoading(false);
-        return;
-      }
-      if (!variant.stock_quantity || parseInt(variant.stock_quantity) < 0) {
-        setError('Stock quantity must be 0 or greater');
-        setLoading(false);
-        return;
-      }
+    if (formData.variants.length === 0) {
+      setError('Please add at least one variant');
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append('productData', JSON.stringify({
-        product_name: product.product_name,
-        brand: product.brand,
-        description: product.description,
-        variants: product.variants.map(v => ({
-          variant_name: v.variant_type, // Using variant_type as variant_name
-          variant_value: v.variant_value,
-          marked_price: v.marked_price,
-          selling_price: v.selling_price,
-          stock_quantity: v.stock_quantity,
-          sku: v.sku
-        }))
-      }));
-
-      // Append each image file
-      imageFiles.forEach((file) => {
-        formData.append('images', file);
+      // Create FormData for file uploads
+      const formDataToSend = new FormData();
+      formDataToSend.append('productName', formData.productName);
+      formDataToSend.append('brand', formData.brand);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('description', formData.description);
+      
+      // Append images
+      formData.images.forEach((image, index) => {
+        formDataToSend.append(`images`, image.file);
       });
 
-      const response = await axios.post('/api/products', formData, {
+      // Append variants as JSON string
+      formDataToSend.append('variants', JSON.stringify(formData.variants));
+
+      // Send to backend
+      const response = await axios.post('/api/products', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      navigate(`/product/${response.data.productId}`);
+      setSuccess('Product added successfully!');
+      
+      // Reset form
+      setFormData({
+        productName: '',
+        brand: '',
+        category: '',
+        description: '',
+        images: [],
+        variants: []
+      });
+      
     } catch (err) {
-      console.error('Submission error:', err);
-      setError(err.response?.data?.message || 'Error creating product. Please check server logs.');
+      console.error('Error adding product:', err);
+      setError(err.response?.data?.message || 'Failed to add product');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <Navbar/>
-      <div className="add-products-container">
-        <h1 className="add-products-title">Add New Product</h1>
-        
-        {error && <div className="add-products-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="add-products-form">
-          <div className="add-products-grid">
-            {/* Column 1 - Basic Information */}
-            <div className="add-products-section">
-              <h2 className="add-products-section-title">Basic Information</h2>
-              
-              <div className="add-products-form-group">
-                <label className="add-products-label">Product Name*</label>
-                <input
-                  type="text"
-                  name="product_name"
-                  value={product.product_name}
-                  onChange={handleChange}
-                  required
-                  className="add-products-input"
-                  placeholder="Enter product name"
-                />
-              </div>
-              
-              <div className="add-products-form-group">
-                <label className="add-products-label">Brand*</label>
-                <input
-                  type="text"
-                  name="brand"
-                  value={product.brand}
-                  onChange={handleChange}
-                  required
-                  className="add-products-input"
-                  placeholder="Enter brand name"
-                />
-              </div>
-              
-              <div className="add-products-form-group">
-                <label className="add-products-label">Description</label>
-                <textarea
-                  name="description"
-                  value={product.description}
-                  onChange={handleChange}
-                  rows={4}
-                  className="add-products-input add-products-textarea"
-                  placeholder="Enter product description"
-                />
-              </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Add New Product</h1>
+      
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+      {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Product Basic Information */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+              <input
+                type="text"
+                name="productName"
+                value={formData.productName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
             </div>
             
-            {/* Column 2 - Variants */}
-            <div className="add-products-section">
-              <div className="add-products-variant-header-container">
-                <h2 className="add-products-section-title">Variants</h2>
-                <button
-                  type="button"
-                  onClick={addVariant}
-                  className="add-products-add-variant"
-                  aria-label="Add variant"
-                >
-                  <FaPlus />
-                </button>
-              </div>
-              
-              {product.variants.map((variant, index) => (
-                <div key={index} className="add-products-variant-container">
-                  <div className="add-products-variant-header">
-                    <h3 className="add-products-variant-title">Variant {index + 1}</h3>
-                    {product.variants.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeVariant(index)}
-                        className="add-products-variant-remove"
-                        aria-label="Remove variant"
-                      >
-                        <FaTrash />
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="add-products-form-group">
-                    <label className="add-products-label">Variant Type*</label>
-                    <select
-                      name="variant_type"
-                      value={variant.variant_type}
-                      onChange={(e) => handleVariantChange(index, e)}
-                      className="add-products-input"
-                      required
-                    >
-                      {variantTypes.map(type => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="add-products-form-group">
-                    <label className="add-products-label">
-                      {variant.variant_type === 'Size' ? 'Size (e.g., XL)' : 'Color (e.g., Red)'}*
-                    </label>
-                    <input
-                      type="text"
-                      name="variant_value"
-                      value={variant.variant_value}
-                      onChange={(e) => handleVariantChange(index, e)}
-                      required
-                      className="add-products-input"
-                      placeholder={variant.variant_type === 'Size' ? 'e.g., XL' : 'e.g., Red'}
-                    />
-                  </div>
-                  
-                  <div className="add-products-form-group">
-                    <label className="add-products-label">Marked Price*</label>
-                    <input
-                      type="number"
-                      name="marked_price"
-                      value={variant.marked_price}
-                      onChange={(e) => handleVariantChange(index, e)}
-                      min="0.01"
-                      step="0.01"
-                      required
-                      className="add-products-input"
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div className="add-products-form-group">
-                    <label className="add-products-label">Selling Price*</label>
-                    <input
-                      type="number"
-                      name="selling_price"
-                      value={variant.selling_price}
-                      onChange={(e) => handleVariantChange(index, e)}
-                      min="0.01"
-                      step="0.01"
-                      required
-                      className="add-products-input"
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div className="add-products-form-group">
-                    <label className="add-products-label">Stock Quantity*</label>
-                    <input
-                      type="number"
-                      name="stock_quantity"
-                      value={variant.stock_quantity}
-                      onChange={(e) => handleVariantChange(index, e)}
-                      min="0"
-                      required
-                      className="add-products-input"
-                      placeholder="0"
-                    />
-                  </div>
-                  
-                  <div className="add-products-form-group">
-                    <label className="add-products-label">SKU (Optional)</label>
-                    <input
-                      type="text"
-                      name="sku"
-                      value={variant.sku}
-                      onChange={(e) => handleVariantChange(index, e)}
-                      className="add-products-input"
-                      placeholder="Product SKU"
-                    />
-                  </div>
-                </div>
-              ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
+              <input
+                type="text"
+                name="brand"
+                value={formData.brand}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
             </div>
             
-            {/* Column 3 - Images */}
-            <div className="add-products-section">
-              <h2 className="add-products-section-title">Images (Max 5)</h2>
-              
-              <div className="add-products-upload-area">
-                <label htmlFor="product-images-upload">
-                  <div className="add-products-upload-content">
-                    <FaUpload className="add-products-upload-icon" />
-                    <div className="add-products-upload-text">Click to upload images</div>
-                    <div className="add-products-upload-hint">or drag and drop</div>
-                  </div>
-                  <input
-                    id="product-images-upload"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="add-products-file-input"
-                  />
-                </label>
-              </div>
-              
-              <div className="add-products-image-grid">
-                {product.images.map((img, index) => (
-                  <div key={index} className="add-products-image-preview">
-                    <img src={img} alt={`Preview ${index + 1}`} />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="add-products-image-remove"
-                      aria-label="Remove image"
-                    >
-                      <FaMinus size={10} />
-                    </button>
-                  </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
-              </div>
+              </select>
             </div>
           </div>
           
-          <div className="add-products-button-group">
-            <button
-              type="button"
-              onClick={() => navigate('/products')}
-              className="add-products-button add-products-button-cancel"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="add-products-button add-products-button-submit"
-            >
-              {loading ? 'Saving...' : 'Save Product'}
-            </button>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              rows="4"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            ></textarea>
           </div>
-        </form>
-      </div>
-    </>
+        </div>
+        
+        {/* Product Images */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-4">Images</h2>
+          <p className="text-sm text-gray-500 mb-4">Upload up to 5 images (first image will be the main image)</p>
+          
+          <div className="flex flex-wrap gap-4 mb-4">
+            {formData.images.map((image, index) => (
+              <div key={index} className="relative">
+                <img 
+                  src={image.preview} 
+                  alt={`Preview ${index + 1}`} 
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            
+            {formData.images.length < 5 && (
+              <div 
+                className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer"
+                onClick={() => fileInputRef.current.click()}
+              >
+                <span className="text-gray-400">+</span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  accept="image/*"
+                  multiple
+                />
+              </div>
+            )}
+          </div>
+          
+          {formData.images.length < 5 && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                {formData.images.length === 0 ? 'Upload Images' : 'Upload More Images'}
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {/* Product Variants */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-4">Variants</h2>
+          
+          <div className="space-y-4">
+            {formData.variants.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marked Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {formData.variants.map((variant, index) => (
+                      <tr key={index}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{variant.type}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{variant.value}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${variant.markedPrice.toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${variant.sellingPrice.toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{variant.stockQuantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            type="button"
+                            onClick={() => removeVariant(index)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            
+            <div className="bg-gray-50 p-4 rounded-md">
+              <h3 className="text-md font-medium mb-3">Add New Variant</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Variant Type</label>
+                  <select
+                    value={variantType}
+                    onChange={handleVariantTypeChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="size">Size</option>
+                    <option value="color">Color</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {variantType === 'size' ? 'Size' : 'Color'} *
+                  </label>
+                  <input
+                    type="text"
+                    name="value"
+                    value={currentVariant.value}
+                    onChange={handleVariantChange}
+                    placeholder={variantType === 'size' ? 'e.g., XL, 10, etc.' : 'e.g., Red, Blue, etc.'}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Marked Price *</label>
+                  <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input
+                      type="number"
+                      name="markedPrice"
+                      value={currentVariant.markedPrice}
+                      onChange={handleVariantChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-7 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label>
+                  <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input
+                      type="number"
+                      name="sellingPrice"
+                      value={currentVariant.sellingPrice}
+                      onChange={handleVariantChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-7 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
+                  <input
+                    type="number"
+                    name="stockQuantity"
+                    value={currentVariant.stockQuantity}
+                    onChange={handleVariantChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              
+              <button
+                type="button"
+                onClick={addVariant}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Add Variant
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Submit Button */}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300"
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </>
+            ) : 'Add Product'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
