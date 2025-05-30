@@ -1,8 +1,11 @@
 import React from 'react';
-import Nav from './Nav';
+// import Nav from './Customers/Nav';
 import './about.css';
-import Logo from "./Logo";
-import CartLogo from "./CartLogo";
+// import Logo from "./Customers/Logo";
+// import CartLogo from "./CartLogo";
+import Nav from './Nav';
+import Logo from './Logo';
+import CartLogo from './CartLogo';
 
 function About() {
   return (

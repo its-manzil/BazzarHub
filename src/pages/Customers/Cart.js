@@ -1,6 +1,6 @@
 import React from 'react';
-import Nav from './Nav';
-import Logo from './Logo';
+import Nav from '../Nav';
+import Logo from '../Logo';
 import './cart.css';
 import { useNavigate } from 'react-router-dom';
 

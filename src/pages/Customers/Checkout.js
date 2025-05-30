@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Nav from './Nav';
-import Logo from './Logo';
+import Nav from '../Nav';
+import Logo from '../Logo';
 import './checkout.css';
-import CartLogo from './CartLogo'
+import CartLogo from '../CartLogo'
 
 const Checkout = () => {
   const [location, setLocation] = useState('');

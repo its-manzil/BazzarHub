@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './profile.css';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
-import Nav from './Nav';
+import Nav from '../Nav';
 
 
 Chart.register(...registerables);
