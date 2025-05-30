@@ -20,7 +20,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // File upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, '/Users/manzil/Developer/All-Projects/BazzarHub/Backend/uploads');
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -356,6 +356,103 @@ app.put('/api/orders/:orderId/cancel', verifyToken, async (req, res) => {
   }
 });
 
+
+/*----------------Testing backends -------------- */
+// Product Routes
+// Add Product Endpoint
+app.post('/api/products', verifyToken, upload.array('images', 5), async (req, res) => {
+  try {
+    const { productName, brand, category, description, variants } = req.body;
+    const images = req.files;
+
+    if (!productName || !brand || !category || !description || !variants) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    if (!images || images.length === 0) {
+      return res.status(400).json({ message: 'At least one image is required' });
+    }
+
+    // Parse variants
+    const parsedVariants = JSON.parse(variants);
+    if (!Array.isArray(parsedVariants) || parsedVariants.length === 0) {
+      return res.status(400).json({ message: 'At least one variant is required' });
+    }
+
+    // Start transaction
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Insert product
+      const [productResult] = await connection.query(
+        'INSERT INTO products (product_name, brand, description) VALUES (?, ?, ?)',
+        [productName, brand, description]
+      );
+      const productId = productResult.insertId;
+
+      // Insert category mapping (assuming categories table is populated)
+      const [categoryResult] = await connection.query(
+        'SELECT category_id FROM categories WHERE category_name = ?',
+        [category]
+      );
+
+      if (categoryResult.length > 0) {
+        await connection.query(
+          'INSERT INTO item_category_mapping (item_id, category_id) VALUES (?, ?)',
+          [productId, categoryResult[0].category_id]
+        );
+      }
+
+      // Insert variants
+      for (const variant of parsedVariants) {
+        await connection.query(
+          'INSERT INTO product_variants (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity) VALUES (?, ?, ?, ?, ?, ?)',
+          [
+            productId,
+            variant.type,
+            variant.value,
+            variant.markedPrice,
+            variant.sellingPrice,
+            variant.stockQuantity
+          ]
+        );
+      }
+
+      // Insert images
+      for (const image of images) {
+        await connection.query(
+          'INSERT INTO item_images (product_id, image_url) VALUES (?, ?)',
+          [productId, image.filename]
+        );
+      }
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+
+      res.status(201).json({ message: 'Product added successfully', productId });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Add product error:', error);
+    res.status(500).json({ message: 'Error adding product' });
+  }
+});
+
+// Get all products (for testing)
+app.get('/api/products', async (req, res) => {
+  try {
+    const [products] = await db.query('SELECT * FROM products');
+    res.json({ products });
+  } catch (error) {
+    console.error('Get products error:', error);
+    res.status(500).json({ message: 'Error fetching products' });
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

@@ -1,60 +1,37 @@
 import { IoHome } from "react-icons/io5";
-import { FaHotel } from "react-icons/fa";
+import { FaHotel, FaBookOpen } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
-import { FaBookOpen } from "react-icons/fa6";
 import { MdContactPhone } from "react-icons/md";
-import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import "./Nav.css";
 
 function Nav() {
+  const { pathname } = useLocation();
+  
+  const navItems = [
+    { path: "/Home", icon: <IoHome />, text: "Home" },
+    { path: "/Store", icon: <FaHotel />, text: "Store" },
+    { path: "/Profile", icon: <CgProfile />, text: "Profile" },
+    { path: "/About", icon: <FaBookOpen />, text: "About" },
+    { path: "/Contact", icon: <MdContactPhone />, text: "Contact" }
+  ];
+
   return (
-    <nav className="nav">
-      <ul>
-        <li className="list active">
-          <Link to="/Home" className="Link">
-            <button className="icon">
-              <IoHome />
-            </button>
-            <button className="text">Home</button>
-          </Link>
-        </li>
-
-        <li className="list active">
-          <Link to="/Store" className="Link">
-            <button className="icon">
-              <FaHotel />
-            </button>
-            <button className="text">Store</button>
-          </Link>
-        </li>
-
-        <li className="list active">
-          <Link to="/Login" className="Link">
-            <button className="icon">
-              <CgProfile />
-            </button>
-            <button className="text">Profile</button>
-          </Link>
-        </li>
-
-        <li className="list active">
-          <Link to="/About" className="Link">
-            <button className="icon">
-              <FaBookOpen />
-            </button>
-            <button className="text">About</button>
-          </Link>
-        </li>
-
-        <li className="list active">
-          <Link to="/Contact" className="Link">
-            <button className="icon">
-              <MdContactPhone />
-            </button>
-            <button className="text">Contact</button>
-          </Link>
-        </li>
+    <nav className="custom-nav-bar">
+      <ul className="custom-nav-list">
+        {navItems.map((item) => (
+          <li 
+            key={item.path} 
+            className={`custom-nav-item ${
+              pathname === item.path ? "custom-active-nav" : ""
+            }`}
+          >
+            <Link to={item.path} className="custom-nav-link">
+              <span className="custom-nav-icon">{item.icon}</span>
+              <span className="custom-nav-text">{item.text}</span>
+            </Link>
+          </li>
+        ))}
       </ul>
     </nav>
   );

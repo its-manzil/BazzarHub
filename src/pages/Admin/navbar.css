@@ -1,0 +1,93 @@
+/* Main Nav Container */
+.nav1 {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 240px;
+  background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
+  backdrop-filter: blur(8px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  padding: 20px 0;
+}
+
+/* Nav List */
+.nav1 ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nav Items */
+.nav1 .AdminNav {
+  width: 100%;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Active Link Highlighting */
+.nav1 .AdminNav.active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav1 .AdminNav.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: #646cff; /* Accent color */
+}
+
+/* Links & Buttons */
+.nav1 .Link1 {
+  text-decoration: none;
+  color: #e0e0e0;
+  display: block;
+  width: 100%;
+}
+
+.nav1 .text1 {
+  width: 100%;
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Hover Effects */
+.nav1 .AdminNav:not(.active):hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav1 .AdminNav:hover .text1 {
+  transform: translateX(8px);
+  color: white;
+}
+
+/* Logout Button (Bottom + Special Style) */
+.nav1 .logout {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav1 .logout .text1 {
+  color: #ff6b6b;
+}
+
+.nav1 .logout:hover .text1 {
+  color: #ff3e3e;
+  text-shadow: 0 0 8px rgba(255, 62, 62, 0.6);
+}

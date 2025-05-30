@@ -82,7 +82,45 @@ CREATE TABLE IF NOT EXISTS item_category_mapping (
 );
 
 
+-- Database Updated in May 28:
+-- Update Items Table
+ALTER TABLE items 
+DROP COLUMN size,
+DROP COLUMN stock_remaining;
 
+-- Create Product Table (replaces items)
+CREATE TABLE IF NOT EXISTS products (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(255) NOT NULL,
+    brand VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create Product Variants Table (for size/color/etc variations)
+CREATE TABLE IF NOT EXISTS product_variants (
+    variant_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    variant_name VARCHAR(100) NOT NULL, -- e.g., "Size", "Color"
+    variant_value VARCHAR(100) NOT NULL, -- e.g., "XL", "Red"
+    marked_price DECIMAL(10,2) NOT NULL,
+    selling_price DECIMAL(10,2) NOT NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    sku VARCHAR(100) UNIQUE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    CHECK (selling_price <= marked_price)
+);
+
+ALTER TABLE item_images DROP FOREIGN KEY item_images_ibfk_1;
+ALTER TABLE item_images 
+    CHANGE COLUMN item_id product_id INT NOT NULL,
+    ALGORITHM=INPLACE;
+ALTER TABLE item_images 
+    ADD CONSTRAINT fk_product_images
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE;
+
+ALTER TABLE products ADD category VARCHAR(255) DEFAULT 'Uncategorized';
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 
