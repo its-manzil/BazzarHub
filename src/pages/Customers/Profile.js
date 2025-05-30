@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './profile.css';
-import { Bar, Pie } from 'react-chartjs-2';
-import { Chart, registerables } from 'chart.js';
-import Nav from '../Nav';
-
-
-Chart.register(...registerables);
+import CustomerNav from './CustomerNav';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [orders, setOrders] = useState([]);
-  const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({
     full_name: '',
     username: '',
@@ -29,16 +22,13 @@ const Profile = () => {
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
-  const [message, setMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState([]);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch user profile and orders
+  // Fetch user profile
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('authToken');
@@ -77,29 +67,6 @@ const Profile = () => {
           phone: profileData.user.phone,
           profile_picture: null,
         });
-
-        // Fetch user orders
-        const ordersResponse = await fetch(`http://localhost:8099/api/orders/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const ordersData = await ordersResponse.json();
-        
-        if (ordersResponse.ok) {
-          const sortedOrders = ordersData.orders.sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at)
-          );
-          setOrders(sortedOrders);
-        }
-
-        // Fetch chat messages (simulated)
-        const mockMessages = [
-          { id: 1, sender: 'support', text: 'Hello! How can we help you today?', time: '10:30 AM' },
-          { id: 2, sender: 'user', text: 'I have a question about my recent order', time: '10:32 AM' }
-        ];
-        setChatMessages(mockMessages);
       } catch (err) {
         setError(err.message);
         console.error('Fetch error:', err);
@@ -110,12 +77,6 @@ const Profile = () => {
 
     fetchData();
   }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    navigate('/login');
-  };
 
   const handleEditChange = (e) => {
     const { name, value, files } = e.target;
@@ -235,7 +196,6 @@ const Profile = () => {
       }
 
       setUser(data.user);
-      setEditMode(false);
       setSuccessMessage('Profile updated successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
@@ -327,7 +287,6 @@ const Profile = () => {
   };
 
   const cancelEdit = () => {
-    setEditMode(false);
     setErrors({});
     setEditData({
       full_name: user.full_name,
@@ -336,106 +295,6 @@ const Profile = () => {
       phone: user.phone,
       profile_picture: null,
     });
-  };
-
-  const getOrderStatusClass = (status) => {
-    switch (status) {
-      case 'delivered': return 'status-delivered';
-      case 'cancelled': return 'status-cancelled';
-      case 'pending': return 'status-pending';
-      case 'processing': return 'status-processing';
-      case 'shipped': return 'status-shipped';
-      default: return '';
-    }
-  };
-
-  const handleCancelOrder = async (orderId) => {
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8099/api/orders/${orderId}/cancel`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to cancel order');
-      }
-
-      // Update the orders list
-      const updatedOrders = orders.map(order => 
-        order.order_id === orderId ? { ...order, order_status: 'cancelled' } : order
-      );
-      setOrders(updatedOrders);
-      setSuccessMessage('Order cancelled successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (err) {
-      setError(err.message);
-      console.error('Cancel order error:', err);
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
-    
-    const newMessage = {
-      id: chatMessages.length + 1,
-      sender: 'user',
-      text: message,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    setChatMessages([...chatMessages, newMessage]);
-    setMessage('');
-    
-    // Simulate response
-    setTimeout(() => {
-      const responseMessage = {
-        id: chatMessages.length + 2,
-        sender: 'support',
-        text: 'Thanks for your message. Our team will get back to you shortly.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setChatMessages(prev => [...prev, responseMessage]);
-    }, 1000);
-  };
-
-  // Prepare data for charts
-  const orderStatusData = {
-    labels: ['Delivered', 'Shipped', 'Processing', 'Pending', 'Cancelled'],
-    datasets: [{
-      data: [
-        orders.filter(o => o.order_status === 'delivered').length,
-        orders.filter(o => o.order_status === 'shipped').length,
-        orders.filter(o => o.order_status === 'processing').length,
-        orders.filter(o => o.order_status === 'pending').length,
-        orders.filter(o => o.order_status === 'cancelled').length
-      ],
-      backgroundColor: [
-        '#4CAF50',
-        '#2196F3',
-        '#FFC107',
-        '#FF9800',
-        '#F44336'
-      ]
-    }]
-  };
-
-  const monthlySpendingData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [{
-      label: 'Total Spending ($)',
-      data: Array(12).fill(0).map((_, i) => 
-        orders
-          .filter(o => new Date(o.created_at).getMonth() === i)
-          .reduce((sum, o) => sum + o.total_amount, 0)
-      ),
-      backgroundColor: '#3f51b5'
-    }]
   };
 
   if (loading) {
@@ -458,403 +317,118 @@ const Profile = () => {
 
   return (
     <>
-      <Nav />
+    <CustomerNav/>
+    <div className="profile-content-area">
+      {successMessage && <div className="success-message">{successMessage}</div>}
       
-      
-      <div className="profile-layout">
-        {/* Left Sidebar Navigation */}
-        <div className="profile-sidebar">
-          <div className="sidebar-header">
-            {user.profile_picture ? (
-              <img 
-                src={`http://localhost:8099/uploads/${user.profile_picture}`} 
-                alt="Profile" 
-                className="sidebar-profile-pic"
+      <div className="update-tab">
+        <h2>Update Profile</h2>
+        
+        <div className="update-form-container">
+          <div className="profile-picture-update">
+            <div className="current-picture">
+              {user.profile_picture ? (
+                <img 
+                  src={`http://localhost:8099/uploads/${user.profile_picture}`} 
+                  alt="Current Profile" 
+                  className="profile-picture"
+                />
+              ) : (
+                <div className="profile-picture-placeholder">
+                  {user.full_name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <label className="upload-btn">
+              Change Photo
+              <input 
+                type="file" 
+                name="profile_picture" 
+                onChange={handleEditChange}
+                accept="image/*"
+                style={{ display: 'none' }}
               />
-            ) : (
-              <div className="sidebar-profile-pic placeholder">
-                {user.full_name.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <h3>{user.full_name}</h3>
-            <p>@{user.username}</p>
+            </label>
           </div>
           
-          <nav className="sidebar-nav">
+          <form className="update-form">
+            <div className="form-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                name="full_name"
+                value={editData.full_name}
+                onChange={handleEditChange}
+              />
+              {errors.full_name && <span className="error">{errors.full_name}</span>}
+            </div>
+            
+            <div className="form-group">
+              <label>Username</label>
+              <input
+                type="text"
+                name="username"
+                value={editData.username}
+                onChange={handleEditChange}
+              />
+              {errors.username && <span className="error">{errors.username}</span>}
+            </div>
+            
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={editData.email}
+                onChange={handleEditChange}
+              />
+              {errors.email && <span className="error">{errors.email}</span>}
+            </div>
+            
+            <div className="form-group">
+              <label>Phone</label>
+              <input
+                type="tel"
+                name="phone"
+                value={editData.phone}
+                onChange={handleEditChange}
+              />
+              {errors.phone && <span className="error">{errors.phone}</span>}
+            </div>
+            
+            <div className="form-actions">
+              <button 
+                type="button" 
+                onClick={handleSaveProfile} 
+                className="save-btn"
+              >
+                Save Changes
+              </button>
+              <button 
+                type="button" 
+                onClick={cancelEdit} 
+                className="cancel-btn"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+          
+          <div className="account-actions">
             <button 
-              className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => setShowPasswordModal(true)}
+              className="change-password-btn"
             >
-              <i className="fas fa-tachometer-alt"></i> Dashboard
+              Change Password
             </button>
             
             <button 
-              className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
-              onClick={() => setActiveTab('profile')}
+              onClick={() => setShowDeleteModal(true)}
+              className="delete-account-btn"
             >
-              <i className="fas fa-user"></i> Profile
+              Delete Account
             </button>
-            
-            <button 
-              className={`nav-btn ${activeTab === 'update' ? 'active' : ''}`}
-              onClick={() => setActiveTab('update')}
-            >
-              <i className="fas fa-edit"></i> Update Profile
-            </button>
-            
-            <button 
-              className="nav-btn logout-btn"
-              onClick={handleLogout}
-            >
-              <i className="fas fa-sign-out-alt"></i> Logout
-            </button>
-          </nav>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="profile-content-area">
-          {successMessage && <div className="success-message">{successMessage}</div>}
-          
-          {/* Dashboard Tab */}
-          {activeTab === 'dashboard' && (
-            <div className="dashboard-tab">
-              <h2>Dashboard</h2>
-              
-              <div className="stats-cards">
-                <div className="stat-card">
-                  <h3>Total Orders</h3>
-                  <p>{orders.length}</p>
-                </div>
-                
-                <div className="stat-card">
-                  <h3>Pending Orders</h3>
-                  <p>{orders.filter(o => o.order_status === 'pending').length}</p>
-                </div>
-                
-                <div className="stat-card">
-                  <h3>Total Spent</h3>
-                  <p>${orders.reduce((sum, o) => sum + o.total_amount, 0).toFixed(2)}</p>
-                </div>
-              </div>
-              
-              <div className="charts-row">
-                <div className="chart-container">
-                  <h3>Order Status Distribution</h3>
-                  <Pie data={orderStatusData} />
-                </div>
-                
-                <div className="chart-container">
-                  <h3>Monthly Spending</h3>
-                  <Bar data={monthlySpendingData} />
-                </div>
-              </div>
-              
-              <div className="recent-orders">
-                <h3>Recent Orders</h3>
-                {orders.length === 0 ? (
-                  <div className="no-orders">
-                    <p>You haven't placed any orders yet.</p>
-                    <button onClick={() => navigate('/')} className="shop-btn">Start Shopping</button>
-                  </div>
-                ) : (
-                  <div className="orders-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Order ID</th>
-                          <th>Date</th>
-                          <th>Amount</th>
-                          <th>Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {orders.slice(0, 5).map(order => (
-                          <tr key={order.order_id}>
-                            <td>#{order.order_id}</td>
-                            <td>
-                              {new Date(order.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </td>
-                            <td>${order.total_amount.toFixed(2)}</td>
-                            <td>
-                              <span className={`status-badge ${getOrderStatusClass(order.order_status)}`}>
-                                {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
-                              </span>
-                            </td>
-                            <td>
-                              <button 
-                                onClick={() => navigate(`/order/${order.order_id}`)}
-                                className="view-btn"
-                              >
-                                View
-                              </button>
-                              {order.order_status === 'pending' && (
-                                <button 
-                                  onClick={() => handleCancelOrder(order.order_id)}
-                                  className="cancel-btn"
-                                >
-                                  Cancel
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {orders.length > 5 && (
-                      <button 
-                        onClick={() => setActiveTab('profile')}
-                        className="view-all-btn"
-                      >
-                        View All Orders
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* Profile Tab */}
-          {activeTab === 'profile' && (
-            <div className="profile-tab">
-              <div className="profile-info-section">
-                <h2>Profile Information</h2>
-                
-                <div className="profile-details-grid">
-                  <div className="detail-item">
-                    <span className="detail-label">Full Name:</span>
-                    <span className="detail-value">{user.full_name}</span>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <span className="detail-label">Username:</span>
-                    <span className="detail-value">@{user.username}</span>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <span className="detail-label">Email:</span>
-                    <span className="detail-value">{user.email}</span>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <span className="detail-label">Phone:</span>
-                    <span className="detail-value">{user.phone}</span>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <span className="detail-label">Member Since:</span>
-                    <span className="detail-value">
-                      {new Date(user.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                </div>
-                
-                <h3>Order History</h3>
-                {orders.length === 0 ? (
-                  <div className="no-orders">
-                    <p>You haven't placed any orders yet.</p>
-                    <button onClick={() => navigate('/')} className="shop-btn">Start Shopping</button>
-                  </div>
-                ) : (
-                  <div className="orders-list">
-                    {orders.map(order => (
-                      <div key={order.order_id} className="order-card">
-                        <div className="order-header">
-                          <div className="order-id">Order #{order.order_id}</div>
-                          <div className={`order-status ${getOrderStatusClass(order.order_status)}`}>
-                            {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
-                          </div>
-                        </div>
-                        
-                        <div className="order-date">
-                          {new Date(order.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                        
-                        <div className="order-summary">
-                          <div className="order-total">
-                            Total: ${order.total_amount.toFixed(2)}
-                          </div>
-                          <div className="order-actions">
-                            <button 
-                              onClick={() => navigate(`/order/${order.order_id}`)}
-                              className="details-btn"
-                            >
-                              View Details
-                            </button>
-                            {order.order_status === 'pending' && (
-                              <button 
-                                onClick={() => handleCancelOrder(order.order_id)}
-                                className="cancel-btn"
-                              >
-                                Cancel Order
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="chat-section">
-                <h2>Customer Support</h2>
-                <div className="chat-container">
-                  <div className="chat-messages">
-                    {chatMessages.map(msg => (
-                      <div key={msg.id} className={`message ${msg.sender}`}>
-                        <div className="message-content">
-                          <p>{msg.text}</p>
-                          <span className="message-time">{msg.time}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="chat-input">
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    />
-                    <button onClick={handleSendMessage}>
-                      <i className="fas fa-paper-plane"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Update Tab */}
-          {activeTab === 'update' && (
-            <div className="update-tab">
-              <h2>Update Profile</h2>
-              
-              <div className="update-form-container">
-                <div className="profile-picture-update">
-                  <div className="current-picture">
-                    {user.profile_picture ? (
-                      <img 
-                        src={`http://localhost:8099/uploads/${user.profile_picture}`} 
-                        alt="Current Profile" 
-                        className="profile-picture"
-                      />
-                    ) : (
-                      <div className="profile-picture-placeholder">
-                        {user.full_name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <label className="upload-btn">
-                    Change Photo
-                    <input 
-                      type="file" 
-                      name="profile_picture" 
-                      onChange={handleEditChange}
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </div>
-                
-                <form className="update-form">
-                  <div className="form-group">
-                    <label>Full Name</label>
-                    <input
-                      type="text"
-                      name="full_name"
-                      value={editData.full_name}
-                      onChange={handleEditChange}
-                    />
-                    {errors.full_name && <span className="error">{errors.full_name}</span>}
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Username</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={editData.username}
-                      onChange={handleEditChange}
-                    />
-                    {errors.username && <span className="error">{errors.username}</span>}
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={editData.email}
-                      onChange={handleEditChange}
-                    />
-                    {errors.email && <span className="error">{errors.email}</span>}
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Phone</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={editData.phone}
-                      onChange={handleEditChange}
-                    />
-                    {errors.phone && <span className="error">{errors.phone}</span>}
-                  </div>
-                  
-                  <div className="form-actions">
-                    <button 
-                      type="button" 
-                      onClick={handleSaveProfile} 
-                      className="save-btn"
-                    >
-                      Save Changes
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={cancelEdit} 
-                      className="cancel-btn"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-                
-                <div className="account-actions">
-                  <button 
-                    onClick={() => setShowPasswordModal(true)}
-                    className="change-password-btn"
-                  >
-                    Change Password
-                  </button>
-                  
-                  <button 
-                    onClick={() => setShowDeleteModal(true)}
-                    className="delete-account-btn"
-                  >
-                    Delete Account
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -977,6 +551,7 @@ const Profile = () => {
           </div>
         </div>
       )}
+    </div>
     </>
   );
 };

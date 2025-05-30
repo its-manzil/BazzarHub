@@ -1,97 +1,315 @@
-import React, { useState } from "react";
-import Nav from "./Nav";
-import Logo from "./Logo";
-import Search from "./Search";
-import CartLogo from "./CartLogo";
-import "./store.css";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Nav from './/Nav';
+import {
+  Box, Grid, Card, CardMedia, CardContent, Typography,
+  Button, Select, MenuItem, FormControl, InputLabel,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Rating, Divider, Chip, Badge
+} from '@mui/material';
+import axios from 'axios';
 
-const products = [
-  { id: 1, name: "Apple", price: "$1.00", image: "./images/Product 1.jpg", category: "Fruits" },
-  { id: 2, name: "Banana", price: "$0.50", image: "./images/Product 1.jpg", category: "Fruits" },
-  { id: 3, name: "Carrot", price: "$0.30", image: "./images/Product 1.jpg", category: "Vegetables" },
-  { id: 4, name: "Tomato", price: "$0.40", image: "./images/Product 1.jpg", category: "Vegetables" },
-  { id: 5, name: "Bread", price: "$1.50", image: "./images/Product 1.jpg", category: "Bakery" },
-  { id: 6, name: "Cake", price: "$2.00", image: "./images/Product 1.jpg", category: "Bakery" },
-  { id: 7, name: "Orange", price: "$0.70", image: "./images/Product 1.jpg", category: "Fruits" },
-  { id: 8, name: "Potato", price: "$0.20", image: "./images/Product 1.jpg", category: "Vegetables" },
-  { id: 9, name: "Milk", price: "$1.20", image: "./images/Product 1.jpg", category: "Dairy" },
-  { id: 10, name: "Cheese", price: "$1.80", image: "./images/Product 1.jpg", category: "Dairy" },
-  { id: 11, name: "Muffin", price: "$1.00", image: "./images/Product 1.jpg", category: "Bakery" },
-  { id: 12, name: "Yogurt", price: "$0.90", image: "./images/Product 1.jpg", category: "Dairy" },
-];
+const Store = () => {
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState('');
+  const [sortOption, setSortOption] = useState('newest');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [openDialog, setOpenDialog] = useState(false);
+  const navigate = useNavigate();
 
-const categories = ["All", "Fruits", "Vegetables", "Bakery", "Dairy"];
+  const categories = [
+    'All',
+    'Clothing',
+    'Electronics',
+    'Sports',
+    'Jewelry',
+    'Medicines',
+    'Home & Kitchen',
+    'Beauty',
+    'Books',
+    'Toys',
+    'Automotive'
+  ];
+  // Modify the getMainImage function in Store.js
 
-export default function Store() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:8099/api/storeProducts');
+        setProducts(response.data);
+        setFilteredProducts(response.data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    let result = [...products];
+
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      result = result.filter(product => product.category === selectedCategory);
+    }
+
+    // Sort products
+    switch (sortOption) {
+      case 'newest':
+        result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      case 'oldest':
+        result.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        break;
+      case 'priceHigh':
+        result.sort((a, b) => {
+          const maxPriceA = Math.max(...a.variants.map(v => v.selling_price));
+          const maxPriceB = Math.max(...b.variants.map(v => v.selling_price));
+          return maxPriceB - maxPriceA;
+        });
+        break;
+      case 'priceLow':
+        result.sort((a, b) => {
+          const minPriceA = Math.min(...a.variants.map(v => v.selling_price));
+          const minPriceB = Math.min(...b.variants.map(v => v.selling_price));
+          return minPriceA - minPriceB;
+        });
+        break;
+      case 'alphabetical':
+        result.sort((a, b) => a.product_name.localeCompare(b.product_name));
+        break;
+      default:
+        break;
+    }
+
+    setFilteredProducts(result);
+  }, [products, sortOption, selectedCategory]);
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
+  const handleAddToCart = (product) => {
+    setSelectedProduct(product);
+    if (product.variants.length === 1) {
+      setSelectedVariant(product.variants[0].variant_id);
+    }
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedVariant('');
+    setQuantity(1);
+  };
+
+  const handleAddToCartConfirm = () => {
+    if (!selectedVariant && selectedProduct.variants.length > 0) {
+      alert('Please select a variant');
+      return;
+    }
+
+    // Here you would typically add to cart via API
+    console.log('Adding to cart:', {
+      productId: selectedProduct.product_id,
+      variantId: selectedVariant,
+      quantity
+    });
+
+    // For now, just show an alert
+    alert(`${quantity} ${selectedProduct.product_name} added to cart!`);
+    handleCloseDialog();
+  };
+
+  // Modify the getMainImage function in Store.js
+const getMainImage = (product) => {
+  if (!product.images || product.images.length === 0) {
+    return '/placeholder-product.jpg'; // Default placeholder image
+  }
+  
+  // Check if image_url is already a full URL
+  if (product.images[0].image_url.startsWith('http')) {
+    return product.images[0].image_url;
+  }
+  
+  // For locally stored images
+  return `http://localhost:8099/uploads/${product.images[0].image_url}`;
+};
+
+  const getPriceRange = (product) => {
+    if (!product.variants || product.variants.length === 0) return 'N/A';
+    
+    const prices = product.variants.map(v => v.selling_price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    
+    return min === max ? `$${min.toFixed(2)}` : `$${min.toFixed(2)} - $${max.toFixed(2)}`;
+  };
 
   return (
-    <div className="store-wrapper">
-      <header className="store-header-fixed">
-        <Nav />
-        <Logo />
-        <CartLogo />
-        <div className="store-header">
-          <h1 className="store-title">Welcome to BazaarHub Store</h1>
-          <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        </div>
-        <div className="store-controls-sticky">
-          <div className="category-scroll-container">
-            <div className="category-bar">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  className={`category-button ${selectedCategory === cat ? "active" : ""}`}
-                  onClick={() => setSelectedCategory(cat)}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </header>
+    <>
+    <Nav/>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap' }}>
+        <FormControl sx={{ minWidth: 200, mb: 2 }}>
+          <InputLabel>Sort By</InputLabel>
+          <Select
+            value={sortOption}
+            label="Sort By"
+            onChange={(e) => setSortOption(e.target.value)}
+          >
+            <MenuItem value="newest">Newest First</MenuItem>
+            <MenuItem value="oldest">Oldest First</MenuItem>
+            <MenuItem value="priceHigh">Price: High to Low</MenuItem>
+            <MenuItem value="priceLow">Price: Low to High</MenuItem>
+            <MenuItem value="alphabetical">Alphabetical</MenuItem>
+          </Select>
+        </FormControl>
 
-      <main className="store-product-scrollable">
-        <div className="product-container">
-          {filteredProducts.length > 0 ? (
-            <div className="product-grid">
-              {filteredProducts.map((product) => (
-                <div key={product.id} className="product-card">
-                  <div className="product-image-container">
-                    <img src={product.image} alt={product.name} loading="lazy" />
-                  </div>
-                  <div className="product-info">
-                    <h4>{product.name}</h4>
-                    <p className="product-price">{product.price}</p>
-                    <button className="buy-button">Add to Cart</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="no-results-container">
-              <p className="no-results">No products found matching your criteria</p>
-              <button
-                className="reset-filters"
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("All");
-                }}
-              >
-                Reset Filters
-              </button>
-            </div>
+        <FormControl sx={{ minWidth: 200, mb: 2 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={selectedCategory}
+            label="Category"
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            {categories.map(category => (
+              <MenuItem key={category} value={category}>{category}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Grid container spacing={3}>
+        {filteredProducts.map((product) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={product.product_id}>
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardMedia
+                component="img"
+                height="200"
+                image={getMainImage(product)}
+                alt={product.product_name}
+                sx={{ cursor: 'pointer', objectFit: 'contain', p: 1 }}
+                onClick={() => handleProductClick(product.product_id)}
+              />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography gutterBottom variant="h6" component="div">
+                  {product.product_name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {product.brand}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', my: 1 }}>
+                  <Rating
+                    name="read-only"
+                    value={product.rating || 4} // Default to 4 if no rating exists
+                    precision={0.5}
+                    readOnly
+                  />
+                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                    ({product.reviewCount || 12})
+                  </Typography>
+                </Box>
+                <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
+                  {getPriceRange(product)}
+                </Typography>
+                <Chip
+                  label={product.category || 'Uncategorized'}
+                  size="small"
+                  sx={{ mt: 1 }}
+                />
+              </CardContent>
+              <Box sx={{ p: 2 }}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={() => handleAddToCart(product)}
+                >
+                  Add to Cart
+                </Button>
+              </Box>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Add to Cart Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Add to Cart</DialogTitle>
+        <DialogContent>
+          {selectedProduct && (
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <img
+                  src={getMainImage(selectedProduct)}
+                  alt={selectedProduct.product_name}
+                  style={{ width: '100%', height: 'auto', borderRadius: 4 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <Typography variant="h6">{selectedProduct.product_name}</Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                  {selectedProduct.brand}
+                </Typography>
+                <Chip
+                  label={selectedProduct.category || 'Uncategorized'}
+                  size="small"
+                  sx={{ mt: 1, mb: 2 }}
+                />
+                <Typography variant="body2" paragraph>
+                  {selectedProduct.description || 'No description available.'}
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+
+                {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel>Variant</InputLabel>
+                    <Select
+                      value={selectedVariant}
+                      label="Variant"
+                      onChange={(e) => setSelectedVariant(e.target.value)}
+                    >
+                      {selectedProduct.variants.map((variant) => (
+                        <MenuItem key={variant.variant_id} value={variant.variant_id}>
+                          {variant.variant_name}: {variant.variant_value} - ${variant.selling_price}
+                          {variant.stock_quantity <= 0 && ' (Out of Stock)'}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                <TextField
+                  label="Quantity"
+                  type="number"
+                  fullWidth
+                  value={quantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value > 0) setQuantity(value);
+                  }}
+                  inputProps={{ min: 1 }}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+            </Grid>
           )}
-        </div>
-      </main>
-    </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleAddToCartConfirm} variant="contained" color="primary">
+            Add to Cart
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+    </>
   );
-}
+};
+
+export default Store;
