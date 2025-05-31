@@ -121,6 +121,41 @@ ALTER TABLE item_images
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE;
 
 ALTER TABLE products ADD category VARCHAR(255) DEFAULT 'Uncategorized';
+
+
+-- New tables created Date 31 May
+-- Create product ratings table
+CREATE TABLE IF NOT EXISTS product_ratings (
+    rating_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+    rating DECIMAL(2,1) NOT NULL CHECK (rating >= 0 AND rating <= 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES customers(id) ON DELETE CASCADE,
+    UNIQUE KEY (product_id, user_id) -- Each user can only rate a product once
+);
+
+-- Create product comments table
+CREATE TABLE IF NOT EXISTS product_comments (
+    comment_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES customers(id) ON DELETE CASCADE
+);
+
+-- Create comment images table
+CREATE TABLE IF NOT EXISTS comment_images (
+    image_id INT PRIMARY KEY AUTO_INCREMENT,
+    comment_id INT NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    FOREIGN KEY (comment_id) REFERENCES product_comments(comment_id) ON DELETE CASCADE
+);
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 

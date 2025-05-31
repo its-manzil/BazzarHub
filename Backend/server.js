@@ -718,6 +718,125 @@ app.post('/api/cart', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Error adding to cart' });
   }
 });
+
+// Add these endpoints to your existing server.js
+
+// Get product comments
+app.get('/api/products/:id/comments', async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const [comments] = await db.query(
+      `SELECT 
+        pc.comment_id,
+        pc.text,
+        pc.created_at,
+        c.id as user_id,
+        c.full_name,
+        c.profile_picture,
+        (SELECT AVG(rating) FROM product_ratings WHERE product_id = ?) as avg_rating
+      FROM product_comments pc
+      JOIN customers c ON pc.user_id = c.id
+      WHERE pc.product_id = ?
+      ORDER BY pc.created_at DESC`,
+      [productId, productId]
+    );
+
+    // Get images for each comment
+    for (const comment of comments) {
+      const [images] = await db.query(
+        'SELECT image_url FROM comment_images WHERE comment_id = ?',
+        [comment.comment_id]
+      );
+      comment.images = images.map(img => img.image_url);
+    }
+
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Error fetching comments' });
+  }
+});
+
+// Add product comment with rating
+app.post('/api/products/:id/comments', verifyToken, upload.array('images', 5), async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.userId;
+    const { comment, rating } = req.body;
+
+    // Validate input
+    if (!comment || !rating) {
+      return res.status(400).json({ message: 'Comment and rating are required' });
+    }
+
+    // Start transaction
+    await db.query('START TRANSACTION');
+
+    // Insert or update rating
+    await db.query(
+      `INSERT INTO product_ratings (product_id, user_id, rating)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE rating = ?`,
+      [productId, userId, rating, rating]
+    );
+
+    // Insert comment
+    const [commentResult] = await db.query(
+      `INSERT INTO product_comments (product_id, user_id, text)
+       VALUES (?, ?, ?)`,
+      [productId, userId, comment]
+    );
+
+    const commentId = commentResult.insertId;
+
+    // Process uploaded images
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        await db.query(
+          'INSERT INTO comment_images (comment_id, image_url) VALUES (?, ?)',
+          [commentId, file.filename]
+        );
+      }
+    }
+
+    // Commit transaction
+    await db.query('COMMIT');
+
+    // Get the newly created comment with user details
+    const [newComment] = await db.query(
+      `SELECT 
+        pc.comment_id,
+        pc.text,
+        pc.created_at,
+        c.id as user_id,
+        c.full_name,
+        c.profile_picture
+      FROM product_comments pc
+      JOIN customers c ON pc.user_id = c.id
+      WHERE pc.comment_id = ?`,
+      [commentId]
+    );
+
+    // Get images for the new comment
+    const [images] = await db.query(
+      'SELECT image_url FROM comment_images WHERE comment_id = ?',
+      [commentId]
+    );
+
+    const response = {
+      ...newComment[0],
+      images: images.map(img => img.image_url),
+      rating: parseFloat(rating)
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    await db.query('ROLLBACK');
+    console.error('Error adding comment:', error);
+    res.status(500).json({ message: 'Error adding comment' });
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
