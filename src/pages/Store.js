@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from './/Nav';
+import Search from './/Search'
+import Logo from './/Logo'
+import CartLogo from './/CartLogo'
 import {
   Box, Grid, Card, CardMedia, CardContent, Typography,
   Button, Select, MenuItem, FormControl, InputLabel,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Rating, Divider, Chip, Badge
+  TextField, Rating, Divider, Chip,
 } from '@mui/material';
 import axios from 'axios';
+import './store.css';
 
 const Store = () => {
   const [products, setProducts] = useState([]);
@@ -153,7 +157,10 @@ const getMainImage = (product) => {
 
   return (
     <>
+    <Search/>
     <Nav/>
+    <Logo/>
+    <CartLogo/>
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap' }}>
         <FormControl sx={{ minWidth: 200, mb: 2 }}>

@@ -1,96 +1,319 @@
-/* Store.module.css */
+/* store.css - Modern Animated Store Styles */
 
-.storeContainer {
-  padding: 24px;
+/* Base Styles */
+body {
+  background-color: #f9f9f9;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.filterContainer {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
+/* Card Animation Styles */
+.MuiCard-root {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  border-radius: 12px !important;
+  overflow: hidden;
+  background: white;
+  position: relative;
+  transform: translateY(0);
 }
 
-@media (max-width: 600px) {
-  .filterContainer {
-    flex-direction: column;
-  }
-}
-
-.productsGrid {
-  margin-top: 16px;
-}
-
-.productCard {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.productCard:hover {
+.MuiCard-root:hover {
   transform: translateY(-5px);
-  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12), 0 10px 10px rgba(0, 0, 0, 0.1);
 }
 
-.productImage {
-  cursor: pointer;
-  object-fit: contain;
-  padding: 8px;
-  height: 200px;
-  background-color: #f5f5f5;
+.MuiCard-root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3f51b5, #2196f3);
+  transform: scaleX(0);
+  transform-origin: left;
   transition: transform 0.3s ease;
 }
 
-.productImage:hover {
+.MuiCard-root:hover::before {
+  transform: scaleX(1);
+}
+
+/* Card Media Effects */
+.MuiCardMedia-root {
+  transition: transform 0.5s ease, opacity 0.3s ease;
+  background-color: #f5f5f5;
+}
+
+.MuiCard-root:hover .MuiCardMedia-root {
   transform: scale(1.03);
 }
 
-.productContent {
-  flex-grow: 1;
+/* Button Animation */
+.MuiButton-contained {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 8px !important;
 }
 
-.priceText {
-  color: #1976d2;
-  font-weight: 600;
-  margin-top: 8px;
+.MuiButton-contained::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #3f51b5, #2196f3);
+  z-index: -1;
+  transition: opacity 0.3s ease;
+  opacity: 1;
 }
 
-.categoryChip {
-  margin-top: 8px;
-  background-color: #f0f0f0;
+.MuiButton-contained:hover::after {
+  opacity: 0.9;
 }
 
-.addToCartButton {
-  margin-top: auto;
-  font-weight: 600;
+.MuiButton-contained:active {
+  transform: scale(0.98);
+}
+
+/* Grid Animation */
+.MuiGrid-item {
   transition: all 0.3s ease;
 }
 
-.addToCartButton:hover {
-  background-color: #1565c0;
+/* Dialog Animation */
+.MuiDialog-paper {
+  animation: fadeInUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
 }
 
-.ratingContainer {
-  display: flex;
-  align-items: center;
-  margin: 8px 0;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dialogImage {
+/* Select Dropdown Animation */
+.MuiSelect-select {
+  transition: all 0.3s ease !important;
+}
+
+.MuiSelect-select:focus {
+  background-color: rgba(63, 81, 181, 0.05) !important;
+}
+
+/* Rating Stars Animation */
+.MuiRating-root {
+  transition: all 0.3s ease;
+}
+
+.MuiRating-root:hover {
+  transform: scale(1.05);
+}
+
+/* Chip Animation */
+.MuiChip-root {
+  transition: all 0.3s ease !important;
+}
+
+.MuiChip-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Price Text Animation */
+.MuiTypography-h6 {
+  transition: all 0.3s ease;
+}
+
+.MuiCard-root:hover .MuiTypography-h6 {
+  color: #3f51b5 !important;
+}
+
+/* Loading Animation (for when products are loading) */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Floating Animation for Featured Products */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.featured-product {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Hover Effect for Product Images */
+.product-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.03);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-image-container:hover::after {
+  opacity: 1;
+}
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .MuiCard-root {
+    margin-bottom: 16px;
+  }
+  
+  .MuiCard-root:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Gradient Background for Store Header */
+.store-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated Underline for Headings */
+.animated-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.animated-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+
+.animated-underline:hover::after {
   width: 100%;
-  height: auto;
-  border-radius: 4px;
-  object-fit: cover;
-  max-height: 250px;
 }
 
-.dialogContent {
-  padding: 20px;
+/* Glow Effect for Featured Products */
+.glow-effect {
+  position: relative;
 }
 
-.emptyState {
-  text-align: center;
-  padding: 40px;
-  color: #666;
+.glow-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 15px rgba(63, 81, 181, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect:hover::before {
+  opacity: 1;
+}
+
+/* Modern Filter Controls */
+.filter-controls {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+/* 3D Flip Effect for Product Cards (optional) */
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(10deg);
+}
+
+/* Water Ripple Effect for Buttons */
+.ripple-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-button span.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 600ms linear;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
 }
