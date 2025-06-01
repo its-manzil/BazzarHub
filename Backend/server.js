@@ -442,8 +442,406 @@ app.post('/api/products', upload.array('images', 5), async (req, res) => {
   }
 });
 
+// Add these endpoints to your existing server.js file
+
+// Get all products with variants and images
+app.get('/api/storeProducts', async (req, res) => {
+  try {
+    // Get query parameters for filtering/sorting
+    const { category, sort } = req.query;
+
+    // Base query
+    let query = `
+      SELECT 
+        p.product_id, 
+        p.product_name, 
+        p.brand, 
+        p.description, 
+        p.category,
+        p.created_at
+      FROM products p
+      WHERE 1=1
+    `;
+
+    // Add category filter if provided
+    const queryParams = [];
+    if (category && category !== 'All') {
+      query += ' AND p.category = ?';
+      queryParams.push(category);
+    }
+
+    // Add sorting
+    if (sort) {
+      switch (sort) {
+        case 'newest':
+          query += ' ORDER BY p.created_at DESC';
+          break;
+        case 'oldest':
+          query += ' ORDER BY p.created_at ASC';
+          break;
+        case 'alphabetical':
+          query += ' ORDER BY p.product_name ASC';
+          break;
+        // Price sorting will be handled after variants are fetched
+      }
+    } else {
+      query += ' ORDER BY p.created_at DESC';
+    }
+
+    // Get products
+    const [products] = await db.query(query, queryParams);
+
+    // Get variants and images for each product
+    for (const product of products) {
+      // Get variants
+      const [variants] = await db.query(
+        `SELECT 
+          variant_id, 
+          variant_name, 
+          variant_value, 
+          marked_price, 
+          selling_price, 
+          stock_quantity 
+        FROM product_variants 
+        WHERE product_id = ?`,
+        [product.product_id]
+      );
+      product.variants = variants || [];
+
+      // Get images
+      const [images] = await db.query(
+        'SELECT image_id, image_url FROM item_images WHERE product_id = ?',
+        [product.product_id]
+      );
+      product.images = images || [];
+
+      // Try to get ratings (handle case where table doesn't exist)
+      try {
+        const [ratings] = await db.query(
+          `SELECT 
+            AVG(rating) as avg_rating,
+            COUNT(*) as review_count
+          FROM product_ratings
+          WHERE product_id = ?`,
+          [product.product_id]
+        );
+        product.rating = ratings[0]?.avg_rating || null;
+        product.reviewCount = ratings[0]?.review_count || 0;
+      } catch (error) {
+        // If ratings table doesn't exist or query fails
+        console.log('Ratings not available:', error.message);
+        product.rating = null;
+        product.reviewCount = 0;
+      }
+    }
+
+    // Handle price sorting if needed (must be done after variants are fetched)
+    if (sort === 'priceHigh' || sort === 'priceLow') {
+      products.sort((a, b) => {
+        const getPrice = (product, type) => {
+          if (!product.variants || product.variants.length === 0) return 0;
+          const prices = product.variants.map(v => v.selling_price);
+          return type === 'max' ? Math.max(...prices) : Math.min(...prices);
+        };
+
+        const priceA = sort === 'priceHigh' ? getPrice(a, 'max') : getPrice(a, 'min');
+        const priceB = sort === 'priceHigh' ? getPrice(b, 'max') : getPrice(b, 'min');
+        
+        return sort === 'priceHigh' ? priceB - priceA : priceA - priceB;
+      });
+    }
+
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Error fetching products' });
+  }
+});
+
+// Get single product details
+app.get('/api/storeProducts/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    // Get product details
+    const [products] = await db.query(
+      `SELECT 
+        p.product_id, 
+        p.product_name, 
+        p.brand, 
+        p.description, 
+        p.category,
+        p.created_at
+      FROM products p
+      WHERE p.product_id = ?`,
+      [productId]
+    );
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const product = products[0];
+
+    // Get variants
+    const [variants] = await db.query(
+      `SELECT 
+        variant_id, 
+        variant_name, 
+        variant_value, 
+        marked_price, 
+        selling_price, 
+        stock_quantity,
+        sku
+      FROM product_variants 
+      WHERE product_id = ?
+      ORDER BY variant_name, variant_value`,
+      [productId]
+    );
+    product.variants = variants;
+
+    // Get images
+    const [images] = await db.query(
+      'SELECT image_id, image_url FROM item_images WHERE product_id = ? ORDER BY image_id',
+      [productId]
+    );
+    product.images = images;
+
+    // Get ratings
+    const [ratings] = await db.query(
+      `SELECT 
+        AVG(rating) as avg_rating,
+        COUNT(*) as review_count
+      FROM product_ratings
+      WHERE product_id = ?`,
+      [productId]
+    );
+    product.rating = ratings[0]?.avg_rating || null;
+    product.reviewCount = ratings[0]?.review_count || 0;
+
+    // Get similar products (by category)
+    const [similarProducts] = await db.query(
+      `SELECT 
+        p.product_id, 
+        p.product_name,
+        p.brand,
+        (SELECT image_url FROM item_images WHERE product_id = p.product_id LIMIT 1) as main_image,
+        (SELECT MIN(selling_price) FROM product_variants WHERE product_id = p.product_id) as min_price
+      FROM products p
+      WHERE p.category = ? AND p.product_id != ?
+      LIMIT 4`,
+      [product.category, productId]
+    );
+    product.similarProducts = similarProducts;
+
+    res.json(product);
+  } catch (error) {
+    console.error('Error fetching product details:', error);
+    res.status(500).json({ message: 'Error fetching product details' });
+  }
+});
+
+// Add to cart endpoint
+app.post('/api/cart', verifyToken, async (req, res) => {
+  try {
+    const { userId } = req; // From verifyToken middleware
+    const { productId, variantId, quantity } = req.body;
+
+    // Validate input
+    if (!productId || !variantId || !quantity || quantity < 1) {
+      return res.status(400).json({ message: 'Invalid cart data' });
+    }
+
+    // Check if product variant exists
+    const [variants] = await db.query(
+      `SELECT 
+        p.product_id,
+        p.product_name,
+        pv.variant_id,
+        pv.variant_name,
+        pv.variant_value,
+        pv.selling_price,
+        pv.stock_quantity
+      FROM product_variants pv
+      JOIN products p ON pv.product_id = p.product_id
+      WHERE pv.variant_id = ? AND pv.product_id = ?`,
+      [variantId, productId]
+    );
+
+    if (variants.length === 0) {
+      return res.status(404).json({ message: 'Product variant not found' });
+    }
+
+    const variant = variants[0];
+
+    // Check stock availability
+    if (variant.stock_quantity < quantity) {
+      return res.status(400).json({ 
+        message: 'Not enough stock available',
+        available: variant.stock_quantity
+      });
+    }
+
+    // Check if item already in cart
+    const [existingCartItems] = await db.query(
+      `SELECT cart_item_id, quantity 
+       FROM cart_items 
+       WHERE user_id = ? AND product_id = ? AND variant_id = ?`,
+      [userId, productId, variantId]
+    );
+
+    if (existingCartItems.length > 0) {
+      // Update quantity
+      const newQuantity = existingCartItems[0].quantity + quantity;
+      await db.query(
+        `UPDATE cart_items 
+         SET quantity = ?
+         WHERE cart_item_id = ?`,
+        [newQuantity, existingCartItems[0].cart_item_id]
+      );
+    } else {
+      // Add new item to cart
+      await db.query(
+        `INSERT INTO cart_items 
+         (user_id, product_id, variant_id, quantity, price)
+         VALUES (?, ?, ?, ?, ?)`,
+        [userId, productId, variantId, quantity, variant.selling_price]
+      );
+    }
+
+    res.json({ 
+      success: true,
+      message: 'Product added to cart'
+    });
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    res.status(500).json({ message: 'Error adding to cart' });
+  }
+});
+
+// Add these endpoints to your existing server.js
+
+// Get product comments
+app.get('/api/products/:id/comments', async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const [comments] = await db.query(
+      `SELECT 
+        pc.comment_id,
+        pc.text,
+        pc.created_at,
+        c.id as user_id,
+        c.full_name,
+        c.profile_picture,
+        (SELECT AVG(rating) FROM product_ratings WHERE product_id = ?) as avg_rating
+      FROM product_comments pc
+      JOIN customers c ON pc.user_id = c.id
+      WHERE pc.product_id = ?
+      ORDER BY pc.created_at DESC`,
+      [productId, productId]
+    );
+
+    // Get images for each comment
+    for (const comment of comments) {
+      const [images] = await db.query(
+        'SELECT image_url FROM comment_images WHERE comment_id = ?',
+        [comment.comment_id]
+      );
+      comment.images = images.map(img => img.image_url);
+    }
+
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Error fetching comments' });
+  }
+});
+
+// Add product comment with rating
+app.post('/api/products/:id/comments', verifyToken, upload.array('images', 5), async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.userId;
+    const { comment, rating } = req.body;
+
+    // Validate input
+    if (!comment || !rating) {
+      return res.status(400).json({ message: 'Comment and rating are required' });
+    }
+
+    // Start transaction
+    await db.query('START TRANSACTION');
+
+    // Insert or update rating
+    await db.query(
+      `INSERT INTO product_ratings (product_id, user_id, rating)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE rating = ?`,
+      [productId, userId, rating, rating]
+    );
+
+    // Insert comment
+    const [commentResult] = await db.query(
+      `INSERT INTO product_comments (product_id, user_id, text)
+       VALUES (?, ?, ?)`,
+      [productId, userId, comment]
+    );
+
+    const commentId = commentResult.insertId;
+
+    // Process uploaded images
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        await db.query(
+          'INSERT INTO comment_images (comment_id, image_url) VALUES (?, ?)',
+          [commentId, file.filename]
+        );
+      }
+    }
+
+    // Commit transaction
+    await db.query('COMMIT');
+
+    // Get the newly created comment with user details
+    const [newComment] = await db.query(
+      `SELECT 
+        pc.comment_id,
+        pc.text,
+        pc.created_at,
+        c.id as user_id,
+        c.full_name,
+        c.profile_picture
+      FROM product_comments pc
+      JOIN customers c ON pc.user_id = c.id
+      WHERE pc.comment_id = ?`,
+      [commentId]
+    );
+
+    // Get images for the new comment
+    const [images] = await db.query(
+      'SELECT image_url FROM comment_images WHERE comment_id = ?',
+      [commentId]
+    );
+
+    const response = {
+      ...newComment[0],
+      images: images.map(img => img.image_url),
+      rating: parseFloat(rating)
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    await db.query('ROLLBACK');
+    console.error('Error adding comment:', error);
+    res.status(500).json({ message: 'Error adding comment' });
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
   console.log(`JWT Secret: ${JWT_SECRET.substring(0, 10)}... (only shown for debugging)`);
 });
+
+
+// Get all products with variants and images

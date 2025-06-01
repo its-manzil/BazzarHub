@@ -1,0 +1,13 @@
+.logo-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  
+  .logo-image {
+    width: 100px;
+    height: auto;
+  }
+  

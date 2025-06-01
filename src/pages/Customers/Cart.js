@@ -1,8 +1,7 @@
-import React from 'react';
-import Nav from './Nav';
-import Logo from './Logo';
+
 import './cart.css';
 import { useNavigate } from 'react-router-dom';
+import CustomerNav from './CustomerNav';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -29,9 +28,8 @@ const Cart = () => {
 
   return (
     <>
-      <Nav />
+      <CustomerNav/>
       <div className="cart-container">
-        <Logo />
         <h2 className="cart-title">Your Shopping Cart</h2>
         <div className="cart-content">
           <div className="cart-header">

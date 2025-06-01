@@ -1,0 +1,110 @@
+.main {
+  text-align: center;
+  position: relative;
+  height: 100vh; /* Full viewport height */
+  width: 100%;
+}
+
+.slideshow-container {
+  display: inline-block;
+  position: relative;
+  max-width: 100vw;
+  height: 100%;
+  overflow: hidden;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.slideshow-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 1s ease-in-out; /* Smooth transition for opacity */
+}
+
+.text-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+  padding-top: 20px;
+  width: 100%;
+  color: #fff;
+  position: relative;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  height: 100vh; /* Full viewport height */
+}
+
+.seeyou {
+  padding-top: 50px;
+}
+
+.text-box h1 {
+  font-size: 62px;
+  text-transform: uppercase;
+  background-clip: text, border-box;
+  -webkit-text-stroke: 2px white;
+  color: transparent;
+  position: relative; /* Ensure correct positioning of the line */
+  display: inline-block; /* Ensures the text takes up only as much space as needed */
+}
+
+.text-box h1::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0; /* Start with no line */
+  height: 100%;
+  color: orange;
+  -webkit-text-stroke: 2px orange;
+  border-right: 2px solid orange; /* Right border creates the line */
+  overflow: hidden;
+  animation: animate 6s linear infinite; /* Animate the line to match text width */
+}
+
+/* Keyframes for animation */
+@keyframes animate {
+  0%, 10%, 100% {
+    width: 0; /* Line starts with no width */
+  }
+  70%, 90% {
+    width: 100%; /* Expands to full width of the text */
+  }
+}
+
+.text-box p {
+  font-size: 18px;
+  text-transform: uppercase;
+  background-clip: text, border-box;
+  color: rgb(255, 255, 255);
+  padding: 10px;
+}
+
+/* CSS for mobile responsive */
+@media (max-width: 800px) {
+  .text-box h1 {
+    font-size: 40px;
+  }
+
+  .nav-links ul li {
+    display: block;
+  }
+
+  .seeyou {
+    padding-top: 20%;
+  }
+
+  @keyframes animate {
+    0%, 10%, 100% {
+      width: 0; /* Line starts with no width */
+    }
+    70%, 90% {
+      width: 229px; /* Adjusted width for smaller screens */
+    }
+  }
+}
