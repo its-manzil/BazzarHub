@@ -1,0 +1,116 @@
+.products-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f6fa;
+}
+
+.products-content {
+  margin-left: 240px;
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.products-title {
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* Table */
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.products-table th,
+.products-table td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid #ececec;
+  font-size: 15px;
+}
+
+.products-table th {
+  background-color: #f3f5f7;
+  color: #444;
+  font-weight: 600;
+}
+
+/* Status Badge */
+.status-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-badge.active {
+  background-color: #d4edda;
+  color: #2e7d32;
+}
+
+.status-badge.out {
+  background-color: #f8d7da;
+  color: #c62828;
+}
+
+/* Buttons */
+.edit-btn,
+.delete-btn {
+  padding: 6px 12px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #1976d2;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #0d47a1;
+}
+
+.delete-btn {
+  background-color: #e53935;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #b71c1c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .products-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .products-title {
+    font-size: 22px;
+  }
+
+  .products-table th,
+  .products-table td {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}

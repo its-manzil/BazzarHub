@@ -14,6 +14,9 @@ import Profile from "./pages/Customers/Profile";
 import Store from "./pages/Customers/Store";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AddProducts from "./pages/Admin/Products/AddProducts";
+import Orders from "./pages/Admin/Orders/Orders";
+import Products from "./pages/Admin/Products/Products";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
@@ -62,8 +65,16 @@ const router = createBrowserRouter([
   {
     path:"AddProducts",
     element: <AddProducts/>
+  },
+  
+  {
+    path:"Orders",
+    element: <Orders/>
+  },
+  {
+    path:"Products",
+    element: <Products/>
   }
-
   
 ]);
 

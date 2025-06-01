@@ -1,17 +1,32 @@
-/* Main Nav Container */
+/* Base Nav Container */
 .nav1 {
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
   width: 240px;
+
   background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
-  backdrop-filter: blur(8px);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   z-index: 1000;
   padding: 20px 0;
+  transition: transform 0.3s ease-in-out;
+}
+
+
+
+/* Toggle Button for Small Screens */
+.admin-nav-toggle {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 28px;
+  color: white;
+  z-index: 1100;
+  cursor: pointer;
 }
 
 /* Nav List */
@@ -22,39 +37,41 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  margin-top: 50%;
 }
 
 /* Nav Items */
-.nav1 .AdminNav {
+.AdminNav {
   width: 100%;
   transition: all 0.3s ease;
   position: relative;
+  
 }
 
-/* Active Link Highlighting */
-.nav1 .AdminNav.active {
+/* Active Item */
+.AdminNav.active {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.nav1 .AdminNav.active::before {
+.AdminNav.active::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   height: 100%;
   width: 4px;
-  background: #646cff; /* Accent color */
+  background: #646cff;
 }
 
 /* Links & Buttons */
-.nav1 .Link1 {
+.Link1 {
   text-decoration: none;
   color: #e0e0e0;
   display: block;
   width: 100%;
 }
 
-.nav1 .text1 {
+.text1 {
   width: 100%;
   padding: 12px 24px;
   background: transparent;
@@ -62,32 +79,58 @@
   color: inherit;
   text-align: left;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 /* Hover Effects */
-.nav1 .AdminNav:not(.active):hover {
+.AdminNav:not(.active):hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.nav1 .AdminNav:hover .text1 {
+.AdminNav:hover .text1 {
   transform: translateX(8px);
   color: white;
 }
 
-/* Logout Button (Bottom + Special Style) */
-.nav1 .logout {
+/* Logout Style */
+.logout {
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.nav1 .logout .text1 {
+.logout .text1 {
   color: #ff6b6b;
 }
 
-.nav1 .logout:hover .text1 {
+.logout:hover .text1 {
   color: #ff3e3e;
   text-shadow: 0 0 8px rgba(255, 62, 62, 0.6);
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .nav1 {
+    transform: translateX(-100%);
+    width: 200px;
+  }
+
+  .nav1.open {
+    transform: translateX(0);
+  }
+
+  .admin-nav-toggle {
+    display: block;
+  }
+
+  .text1 {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+
+  .admin-header {
+    font-size: 20px;
+    padding: 0 20px 16px;
+  }
 }
