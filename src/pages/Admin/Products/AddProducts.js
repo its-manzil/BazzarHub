@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import './AddProducts.css';
 import Navbar from '../Navbar';
+
 const AddProducts = () => {
   const [formData, setFormData] = useState({
     productName: '',
@@ -57,6 +58,7 @@ const AddProducts = () => {
 
   const removeImage = (index) => {
     const newImages = [...formData.images];
+    URL.revokeObjectURL(newImages[index].preview); // Clean up memory
     newImages.splice(index, 1);
     setFormData(prev => ({ ...prev, images: newImages }));
   };
@@ -150,7 +152,6 @@ const AddProducts = () => {
 
       formDataToSend.append('variants', JSON.stringify(formData.variants));
 
-      // Simplified request without token
       await axios.post('http://localhost:8099/api/products', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -169,6 +170,8 @@ const AddProducts = () => {
         variants: []
       });
       
+      // Clean up image URLs
+      formData.images.forEach(image => URL.revokeObjectURL(image.preview));
     } catch (err) {
       console.error('Error adding product:', err);
       setError(err.response?.data?.message || err.message || 'Failed to add product');
@@ -177,280 +180,285 @@ const AddProducts = () => {
     }
   };
 
-
   return (
-    <>
-    <Navbar/>
-      <div className="add-products-container">
-        <h1 className="add-products-title">Add New Product</h1>
+    <div className="admin-layout">
+      <Navbar />
+      <main className="admin-content">
+        <div className="add-products-container">
+          <h1 className="add-products-title">Add New Product</h1>
+          
+          {error && <div className="alert alert-error">{error}</div>}
+          {success && <div className="alert alert-success">{success}</div>}
         
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
-      
-      <form onSubmit={handleSubmit} className="add-products-form">
-        {/* Product Basic Information */}
-        <div className="form-section">
-          <h2 className="section-title">Basic Information</h2>
-          
-          <div className="form-grid">
-            <div className="form-group">
-              <label className="form-label">Product Name *</label>
-              <input
-                type="text"
-                name="productName"
-                value={formData.productName}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Brand *</label>
-              <input
-                type="text"
-                name="brand"
-                value={formData.brand}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Category *</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              >
-                <option value="">Select a category</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Description *</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows="4"
-              className="form-textarea"
-              required
-            ></textarea>
-          </div>
-        </div>
-        
-        {/* Product Images */}
-        <div className="form-section">
-          <h2 className="section-title">Images</h2>
-          <p className="section-description">Upload up to 5 images (first image will be the main image)</p>
-          
-          <div className="images-container">
-            {formData.images.map((image, index) => (
-              <div key={index} className="image-preview-container">
-                <img 
-                  src={image.preview} 
-                  alt={`Preview ${index + 1}`} 
-                  className="image-preview"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="remove-image-button"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-            
-            {formData.images.length < 5 && (
-              <div 
-                className="image-upload-placeholder"
-                onClick={() => fileInputRef.current.click()}
-              >
-                <span className="placeholder-icon">+</span>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  className="hidden-file-input"
-                  accept="image/*"
-                  multiple
-                />
-              </div>
-            )}
-          </div>
-          
-          {formData.images.length < 5 && (
-            <div className="upload-more-container">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current.click()}
-                className="upload-more-button"
-              >
-                {formData.images.length === 0 ? 'Upload Images' : 'Upload More Images'}
-              </button>
-            </div>
-          )}
-        </div>
-        
-        {/* Product Variants */}
-        <div className="form-section">
-          <h2 className="section-title">Variants</h2>
-          
-          <div className="variants-container">
-            {formData.variants.length > 0 && (
-              <div className="variants-table-container">
-                <table className="variants-table">
-                  <thead className="table-header">
-                    <tr>
-                      <th className="table-header-cell">Type</th>
-                      <th className="table-header-cell">Value</th>
-                      <th className="table-header-cell">Marked Price</th>
-                      <th className="table-header-cell">Selling Price</th>
-                      <th className="table-header-cell">Stock</th>
-                      <th className="table-header-cell">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="table-body">
-                    {formData.variants.map((variant, index) => (
-                      <tr key={index} className="table-row">
-                        <td className="table-cell capitalize">{variant.type}</td>
-                        <td className="table-cell">{variant.value}</td>
-                        <td className="table-cell">${variant.markedPrice.toFixed(2)}</td>
-                        <td className="table-cell">${variant.sellingPrice.toFixed(2)}</td>
-                        <td className="table-cell">{variant.stockQuantity}</td>
-                        <td className="table-cell">
-                          <button
-                            type="button"
-                            onClick={() => removeVariant(index)}
-                            className="remove-variant-button"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            
-            <div className="add-variant-container">
-              <h3 className="add-variant-title">Add New Variant</h3>
+          <form onSubmit={handleSubmit} className="add-products-form">
+            {/* Product Basic Information */}
+            <div className="form-section card">
+              <h2 className="section-title">Basic Information</h2>
               
-              <div className="variant-input-grid">
+              <div className="form-grid">
                 <div className="form-group">
-                  <label className="form-label">Variant Type</label>
-                  <select
-                    value={variantType}
-                    onChange={handleVariantTypeChange}
-                    className="form-input"
-                  >
-                    <option value="size">Size</option>
-                    <option value="color">Color</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">
-                    {variantType === 'size' ? 'Size' : 'Color'} *
-                  </label>
+                  <label className="form-label">Product Name *</label>
                   <input
                     type="text"
-                    name="value"
-                    value={currentVariant.value}
-                    onChange={handleVariantChange}
-                    placeholder={variantType === 'size' ? 'e.g., XL, 10, etc.' : 'e.g., Red, Blue, etc.'}
+                    name="productName"
+                    value={formData.productName}
+                    onChange={handleInputChange}
                     className="form-input"
+                    required
+                    placeholder="Enter product name"
                   />
                 </div>
-              </div>
-              
-              <div className="variant-price-grid">
-                <div className="form-group">
-                  <label className="form-label">Marked Price *</label>
-                  <div className="price-input-container">
-                    <span className="price-symbol">$</span>
-                    <input
-                      type="number"
-                      name="markedPrice"
-                      value={currentVariant.markedPrice}
-                      onChange={handleVariantChange}
-                      min="0"
-                      step="0.01"
-                      className="price-input"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
                 
                 <div className="form-group">
-                  <label className="form-label">Selling Price *</label>
-                  <div className="price-input-container">
-                    <span className="price-symbol">$</span>
-                    <input
-                      type="number"
-                      name="sellingPrice"
-                      value={currentVariant.sellingPrice}
-                      onChange={handleVariantChange}
-                      min="0"
-                      step="0.01"
-                      className="price-input"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Stock Quantity *</label>
+                  <label className="form-label">Brand *</label>
                   <input
-                    type="number"
-                    name="stockQuantity"
-                    value={currentVariant.stockQuantity}
-                    onChange={handleVariantChange}
-                    min="0"
+                    type="text"
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleInputChange}
                     className="form-input"
+                    required
+                    placeholder="Enter brand name"
                   />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Category *</label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               
+              <div className="form-group">
+                <label className="form-label">Description *</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="4"
+                  className="form-textarea"
+                  required
+                  placeholder="Enter detailed product description"
+                ></textarea>
+              </div>
+            </div>
+            
+            {/* Product Images */}
+            <div className="form-section card">
+              <h2 className="section-title">Images</h2>
+              <p className="section-description">Upload up to 5 images (first image will be the main image)</p>
+              
+              <div className="images-container">
+                {formData.images.map((image, index) => (
+                  <div key={index} className="image-preview-container">
+                    <img 
+                      src={image.preview} 
+                      alt={`Preview ${index + 1}`} 
+                      className="image-preview"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="remove-image-button"
+                      aria-label="Remove image"
+                    >
+                      ×
+                    </button>
+                    {index === 0 && <span className="main-image-badge">Main</span>}
+                  </div>
+                ))}
+                
+                {formData.images.length < 5 && (
+                  <div 
+                    className="image-upload-placeholder"
+                    onClick={() => fileInputRef.current.click()}
+                    role="button"
+                    tabIndex="0"
+                    aria-label="Upload images"
+                  >
+                    <span className="placeholder-icon">+</span>
+                    <span className="upload-text">Upload</span>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      className="hidden-file-input"
+                      accept="image/*"
+                      multiple
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Product Variants */}
+            <div className="form-section card">
+              <h2 className="section-title">Variants</h2>
+              
+              <div className="variants-container">
+                {formData.variants.length > 0 && (
+                  <div className="variants-table-container">
+                    <table className="variants-table">
+                      <thead className="table-header">
+                        <tr>
+                          <th className="table-header-cell">Type</th>
+                          <th className="table-header-cell">Value</th>
+                          <th className="table-header-cell">Marked Price</th>
+                          <th className="table-header-cell">Selling Price</th>
+                          <th className="table-header-cell">Stock</th>
+                          <th className="table-header-cell">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="table-body">
+                        {formData.variants.map((variant, index) => (
+                          <tr key={index} className="table-row">
+                            <td className="table-cell capitalize">{variant.type}</td>
+                            <td className="table-cell">{variant.value}</td>
+                            <td className="table-cell">${variant.markedPrice.toFixed(2)}</td>
+                            <td className="table-cell">${variant.sellingPrice.toFixed(2)}</td>
+                            <td className="table-cell">{variant.stockQuantity}</td>
+                            <td className="table-cell">
+                              <button
+                                type="button"
+                                onClick={() => removeVariant(index)}
+                                className="remove-variant-button"
+                                aria-label="Remove variant"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                
+                <div className="add-variant-container">
+                  <h3 className="add-variant-title">Add New Variant</h3>
+                  
+                  <div className="variant-input-grid">
+                    <div className="form-group">
+                      <label className="form-label">Variant Type</label>
+                      <select
+                        value={variantType}
+                        onChange={handleVariantTypeChange}
+                        className="form-input"
+                      >
+                        <option value="size">Size</option>
+                        <option value="color">Color</option>
+                        <option value="style">Style</option>
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">
+                        {variantType === 'size' ? 'Size' : variantType === 'color' ? 'Color' : 'Style'} *
+                      </label>
+                      <input
+                        type="text"
+                        name="value"
+                        value={currentVariant.value}
+                        onChange={handleVariantChange}
+                        placeholder={
+                          variantType === 'size' ? 'e.g., XL, 10, etc.' : 
+                          variantType === 'color' ? 'e.g., Red, Blue, etc.' : 
+                          'e.g., Standard, Premium, etc.'
+                        }
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="variant-price-grid">
+                    <div className="form-group">
+                      <label className="form-label">Marked Price *</label>
+                      <div className="price-input-container">
+                        <span className="price-symbol">$</span>
+                        <input
+                          type="number"
+                          name="markedPrice"
+                          value={currentVariant.markedPrice}
+                          onChange={handleVariantChange}
+                          min="0"
+                          step="0.01"
+                          className="price-input"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Selling Price *</label>
+                      <div className="price-input-container">
+                        <span className="price-symbol">$</span>
+                        <input
+                          type="number"
+                          name="sellingPrice"
+                          value={currentVariant.sellingPrice}
+                          onChange={handleVariantChange}
+                          min="0"
+                          step="0.01"
+                          className="price-input"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Stock Quantity *</label>
+                      <input
+                        type="number"
+                        name="stockQuantity"
+                        value={currentVariant.stockQuantity}
+                        onChange={handleVariantChange}
+                        min="0"
+                        className="form-input"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={addVariant}
+                    className="add-variant-button"
+                  >
+                    Add Variant
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Submit Button */}
+            <div className="submit-button-container">
               <button
-                type="button"
-                onClick={addVariant}
-                className="add-variant-button"
+                type="submit"
+                disabled={isLoading}
+                className="submit-button primary-button"
               >
-                Add Variant
+                {isLoading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Processing...
+                  </>
+                ) : 'Add Product'}
               </button>
             </div>
-          </div>
+          </form>
         </div>
-        
-        {/* Submit Button */}
-        <div className="submit-button-container">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="submit-button"
-          >
-            {isLoading ? (
-              <>
-                <span className="spinner"></span>
-                Processing...
-              </>
-            ) : 'Add Product'}
-          </button>
-        </div>
-      </form>
+      </main>
     </div>
-    </>
   );
 };
 

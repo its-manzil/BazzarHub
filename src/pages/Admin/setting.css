@@ -1,0 +1,103 @@
+.settings-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f3f6fc;
+  padding-left: 240px; /* matches your sidebar width */
+}
+
+.settings-content {
+  flex: 1;
+  padding: 40px 30px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-title {
+  font-size: 32px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.settings-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.card-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #f9f9f9;
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+}
+
+.save-btn {
+  margin-top: 10px;
+  padding: 12px 24px;
+  background-color: #646cff;
+  color: #fff;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.save-btn:hover {
+  background-color: #4b55d4;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .settings-container {
+    padding-left: 0;
+  }
+
+  .settings-content {
+    padding: 20px;
+  }
+
+  .settings-title {
+    font-size: 26px;
+  }
+
+  .card-title {
+    font-size: 18px;
+  }
+}
