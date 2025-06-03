@@ -587,10 +587,6 @@ body {
   color: #666;
 }
 
-.reviews-section {
-  /* Add your reviews styling here */
-}
-
 /* Snackbar/Alerts */
 .snackbar {
   animation: slideUp 0.3s ease-out;

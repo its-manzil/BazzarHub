@@ -837,11 +837,192 @@ app.post('/api/products/:id/comments', verifyToken, upload.array('images', 5), a
     res.status(500).json({ message: 'Error adding comment' });
   }
 });
+
+
+//Search algorithm is being used here.
+// Add these new endpoints to your existing server.js
+
+// Search endpoint with typo tolerance and category filtering
+app.get('/api/search', async (req, res) => {
+  try {
+    const { q, category } = req.query;
+    
+    if (!q || q.trim().length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Search query is required' 
+      });
+    }
+
+    // Get all products for search
+    const [allProducts] = await db.query(`
+      SELECT 
+        p.product_id, 
+        p.product_name, 
+        p.brand, 
+        p.description,
+        p.category,
+        GROUP_CONCAT(DISTINCT pv.variant_name SEPARATOR ', ') as variant_names,
+        (SELECT image_url FROM item_images WHERE product_id = p.product_id LIMIT 1) as image_url,
+        MIN(pv.selling_price) as min_price,
+        MAX(pv.marked_price) as max_price
+      FROM products p
+      JOIN product_variants pv ON p.product_id = pv.product_id
+      GROUP BY p.product_id
+    `);
+
+    // Filter by category if provided
+    let filteredProducts = allProducts;
+    if (category) {
+      filteredProducts = allProducts.filter(p => 
+        p.category.toLowerCase().includes(category.toLowerCase())
+      );
+    }
+
+    // Perform search with typo tolerance
+    const { results, suggestion } = searchProducts(filteredProducts, q);
+
+    res.json({ 
+      success: true,
+      results: results.slice(0, 50), // Limit to top 50 results
+      suggestion: suggestion
+    });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error performing search' 
+    });
+  }
+});
+
+// Get all categories for search filters
+app.get('/api/categories', async (req, res) => {
+  try {
+    const [categories] = await db.query(`
+      SELECT DISTINCT category FROM products WHERE category IS NOT NULL
+    `);
+    
+    res.json({ 
+      success: true,
+      categories: categories.map(c => c.category)
+    });
+  } catch (error) {
+    console.error('Categories error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching categories' 
+    });
+  }
+});
+
+// Advanced search function with typo tolerance and suggestions
+function searchProducts(products, query) {
+  const queryTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+  const suggestionThreshold = 0.7; // Similarity threshold for suggestions
+  let bestSuggestion = null;
+  let bestScore = 0;
+
+  // Score each product
+  const scoredProducts = products.map(product => {
+    const productName = product.product_name.toLowerCase();
+    const brand = product.brand.toLowerCase();
+    const category = product.category.toLowerCase();
+    
+    let exactMatchScore = 0;
+    let partialMatchScore = 0;
+    let typoToleranceScore = 0;
+    
+    queryTerms.forEach(term => {
+      // Exact matches
+      if (productName.includes(term)) exactMatchScore += 10;
+      if (brand.includes(term)) exactMatchScore += 8;
+      if (category.includes(term)) exactMatchScore += 5;
+      
+      // Partial matches (starts with)
+      if (productName.startsWith(term)) partialMatchScore += 5;
+      if (brand.startsWith(term)) partialMatchScore += 4;
+      
+      // Check for possible typos and track best suggestion
+      if (exactMatchScore === 0 && partialMatchScore === 0) {
+        const productWords = productName.split(/\s+/);
+        
+        for (const word of productWords) {
+          const similarity = stringSimilarity(word, term);
+          if (similarity > suggestionThreshold && similarity > bestScore) {
+            bestScore = similarity;
+            bestSuggestion = word;
+          }
+          if (similarity > 0.5) {
+            typoToleranceScore += similarity * 3;
+          }
+        }
+      }
+    });
+    
+    return {
+      ...product,
+      _score: exactMatchScore + partialMatchScore * 0.7 + typoToleranceScore
+    };
+  });
+  
+  // Sort by score (descending)
+  const sortedResults = scoredProducts.sort((a, b) => b._score - a._score);
+  
+  // Only include products with some match
+  const filteredResults = sortedResults.filter(p => p._score > 0);
+  
+  return {
+    results: filteredResults,
+    suggestion: bestScore > suggestionThreshold ? bestSuggestion : null
+  };
+}
+
+// String similarity function (0 to 1)
+function stringSimilarity(s1, s2) {
+  const longer = s1.length > s2.length ? s1 : s2;
+  const shorter = s1.length > s2.length ? s2 : s1;
+  const longerLength = longer.length;
+  
+  if (longerLength === 0) return 1.0;
+  
+  // Return similarity ratio
+  return (longerLength - levenshteinDistance(longer, shorter)) / longerLength;
+}
+
+// Levenshtein distance for typo tolerance
+function levenshteinDistance(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  
+  const matrix = [];
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i-1) === a.charAt(j-1)) {
+        matrix[i][j] = matrix[i-1][j-1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i-1][j-1] + 1,
+          matrix[i][j-1] + 1,
+          matrix[i-1][j] + 1
+        );
+      }
+    }
+  }
+  
+  return matrix[b.length][a.length];
+}
+
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
   console.log(`JWT Secret: ${JWT_SECRET.substring(0, 10)}... (only shown for debugging)`);
 });
-
-
-// Get all products with variants and images

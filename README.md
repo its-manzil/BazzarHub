@@ -156,6 +156,9 @@ CREATE TABLE IF NOT EXISTS comment_images (
     image_url VARCHAR(255) NOT NULL,
     FOREIGN KEY (comment_id) REFERENCES product_comments(comment_id) ON DELETE CASCADE
 );
+
+CREATE FULLTEXT INDEX ft_product_search ON products(product_name, brand, description, category);
+CREATE INDEX idx_variant_value ON product_variants(variant_value);
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 

@@ -14,7 +14,8 @@ import Store from "./pages/Store";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AddProducts from "./pages/Admin/Products/AddProducts";
 import ProductDetails from "./pages/ProductDetails";
-import ErrorPage from "./pages/ErrorPage"; // Create this component
+import ErrorPage from "./pages/ErrorPage"; 
+import Results from "./pages/Results";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
@@ -66,6 +67,10 @@ const router = createBrowserRouter([
   {
     path: "product/:id", // Dynamic route parameter
     element: <ProductDetails />
+  },
+  {
+    path: "results",
+    element: <Results/>
   }
 ]);
 
