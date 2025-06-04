@@ -9,13 +9,14 @@ import Cart from "./pages/Customers/Cart";
 import Login from "./pages/Login";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Checkout from "./pages/Customers/Checkout";
-import Profile from "./pages/Customers/Profile";
+import UserSetting from "./pages/Customers/UserSetting";
 import Store from "./pages/Store";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AddProducts from "./pages/Admin/Products/AddProducts";
 import ProductDetails from "./pages/ProductDetails";
 import ErrorPage from "./pages/ErrorPage"; 
 import Results from "./pages/Results";
+import CustomerProfile from "./pages/Customers/CustomerProfile";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
@@ -37,8 +38,8 @@ const router = createBrowserRouter([
     element: <Contact />,
   },
   {
-    path: "profile",
-    element: <Profile />,
+    path: "usersetting",
+    element: <UserSetting />,
   },
   {
     path: "cart",
@@ -57,11 +58,11 @@ const router = createBrowserRouter([
     element: <Store />
   },
   {
-    path: "admin-dashboard",
+    path: "admindashboard",
     element: <AdminDashboard />
   },
   {
-    path: "add-products",
+    path: "addproducts",
     element: <AddProducts />
   },
   {
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
   {
     path: "results",
     element: <Results/>
+  },
+  {
+    path: "customerprofile",
+    element :<CustomerProfile/>
   }
 ]);
 

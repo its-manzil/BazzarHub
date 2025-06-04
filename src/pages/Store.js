@@ -43,7 +43,7 @@ const Store = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:8099/api/storeProducts');
+        const response = await axios.get('http://localhost:8099/api/Products');
         setProducts(response.data);
         setFilteredProducts(response.data);
       } catch (error) {
@@ -57,12 +57,10 @@ const Store = () => {
   useEffect(() => {
     let result = [...products];
 
-    // Filter by category
     if (selectedCategory !== 'All') {
       result = result.filter(product => product.category === selectedCategory);
     }
 
-    // Sort products
     switch (sortOption) {
       case 'newest':
         result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -204,7 +202,7 @@ const Store = () => {
     const prices = product.variants.map(v => Number(v.selling_price));
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    return min === max ? `$${min.toFixed(2)}` : `$${min.toFixed(2)} - $${max.toFixed(2)}`;
+    return min === max ? `Rs.${min.toFixed(2)}` : `Rs.${min.toFixed(2)} - Rs.${max.toFixed(2)}`;
   };
 
   return (
@@ -214,9 +212,9 @@ const Store = () => {
       <Logo />
       <CartLogo />
       
-      <Box className="store-container">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap' }}>
-          <FormControl sx={{ minWidth: 200, mb: 2 }}>
+      <Box className="storejs-container">
+        <Box className="storejs-filter-controls">
+          <FormControl className="storejs-sort-control">
             <InputLabel>Sort By</InputLabel>
             <Select
               value={sortOption}
@@ -231,7 +229,7 @@ const Store = () => {
             </Select>
           </FormControl>
 
-          <FormControl sx={{ minWidth: 200, mb: 2 }}>
+          <FormControl className="storejs-category-control">
             <InputLabel>Category</InputLabel>
             <Select
               value={selectedCategory}
@@ -245,29 +243,29 @@ const Store = () => {
           </FormControl>
         </Box>
 
-        <Grid container spacing={3} className="product-grid">
+        <Grid container spacing={3} className="storejs-product-grid">
           {filteredProducts.map((product) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={product.product_id}>
               <Card 
-                className="product-card"
+                className="storejs-product-card"
                 onClick={() => handleProductClick(product.product_id)}
               >
-                <Box className="product-image-container">
+                <Box className="storejs-product-image-container">
                   <img
                     src={getMainImageUrl(product.images[0]?.image_url)}
                     alt={product.product_name}
-                    className="product-image"
+                    className="storejs-product-image"
                   />
-                  <Box className="product-actions">
+                  <Box className="storejs-product-actions">
                     <IconButton
-                      className={`action-button ${wishlist.includes(product.product_id) ? 'wishlisted' : ''}`}
+                      className={`storejs-action-button ${wishlist.includes(product.product_id) ? 'storejs-wishlisted' : ''}`}
                       onClick={(e) => toggleWishlist(product.product_id, e)}
                       size="small"
                     >
                       <Favorite />
                     </IconButton>
                     <IconButton
-                      className="action-button"
+                      className="storejs-action-button"
                       onClick={(e) => shareProduct(product, e)}
                       size="small"
                     >
@@ -276,33 +274,34 @@ const Store = () => {
                   </Box>
                 </Box>
                 
-                <CardContent className="product-info">
-                  <Typography className="product-title">{product.product_name}</Typography>
-                  <Typography className="product-brand">{product.brand}</Typography>
-                  <Box className="product-rating">
+                <CardContent className="storejs-product-info">
+                  <Typography className="storejs-product-title">{product.product_name}</Typography>
+                  <Typography className="storejs-product-brand">{product.brand}</Typography>
+                  <Box className="storejs-product-rating">
                     <Rating
                       value={product.rating || 0}
                       precision={0.5}
                       readOnly
                       size="small"
                     />
-                    <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                    <Typography variant="body2" className="storejs-review-count">
                       ({product.reviewCount || 0})
                     </Typography>
                   </Box>
-                  <Typography className="product-price">
+                  <Typography className="storejs-product-price">
                     {getPriceRange(product)}
                   </Typography>
                   <Chip
                     label={product.category || 'Uncategorized'}
                     size="small"
-                    className="product-category"
+                    className="storejs-product-category"
                   />
                 </CardContent>
-                <Box sx={{ p: 2 }}>
+                <Box className="storejs-product-button-container">
                   <Button
                     fullWidth
                     variant="contained"
+                    className="storejs-add-to-cart-button"
                     onClick={(e) => handleAddToCart(product, e)}
                   >
                     Add to Cart
@@ -313,80 +312,39 @@ const Store = () => {
           ))}
         </Grid>
 
-        {/* Add to Cart Dialog */}
         <Dialog 
           open={openDialog} 
           onClose={handleCloseDialog}
           maxWidth="lg"
           fullWidth
-          sx={{
-            '& .MuiDialog-container': {
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-            '& .MuiDialog-paper': {
-              margin: 0,
-              maxHeight: '80vh',
-              width: '70%',
-              maxWidth: 'none'
-            }
-          }}
+          className="storejs-cart-dialog"
         >
           <DialogTitle>Add to Cart</DialogTitle>
-          <DialogContent dividers>
+          <DialogContent dividers className="storejs-dialog-content">
             {selectedProduct && (
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: '100%' }}>
-                {/* Images Section */}
-                <Box sx={{ width: { xs: '100%', md: '45%' }, p: 2 }}>
-                  <Box sx={{ 
-                    width: '100%', 
-                    height: { xs: '300px', md: '400px' },
-                    position: 'relative',
-                    mb: 2
-                  }}>
+              <Box className="storejs-dialog-container">
+                <Box className="storejs-dialog-images-section">
+                  <Box className="storejs-main-image-container">
                     {selectedImages.length > 0 ? (
                       <img
                         src={getMainImageUrl(selectedImages[0]?.image_url)}
                         alt={selectedProduct.product_name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain'
-                        }}
+                        className="storejs-main-product-image"
                       />
                     ) : (
-                      <Box sx={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'background.default'
-                      }}>
+                      <Box className="storejs-no-image-placeholder">
                         <Typography>No Image Available</Typography>
                       </Box>
                     )}
                   </Box>
                   {selectedImages.length > 1 && (
-                    <Box sx={{ 
-                      display: 'flex',
-                      gap: 1,
-                      overflowX: 'auto',
-                      py: 1
-                    }}>
+                    <Box className="storejs-thumbnail-container">
                       {selectedImages.map((image, index) => (
                         <img
                           key={image.image_id || index}
                           src={getMainImageUrl(image.image_url)}
                           alt={`Thumbnail ${index + 1}`}
-                          style={{
-                            width: '80px',
-                            height: '80px',
-                            objectFit: 'cover',
-                            border: index === 0 ? '2px solid #1976d2' : '1px solid #ddd',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
+                          className={`storejs-thumbnail-image ${index === 0 ? 'storejs-selected-thumbnail' : ''}`}
                           onClick={() => handleImageSelect(index)}
                         />
                       ))}
@@ -394,58 +352,46 @@ const Store = () => {
                   )}
                 </Box>
 
-                {/* Details Section */}
-                <Box sx={{ 
-                  width: { xs: '100%', md: '55%' },
-                  p: 3,
-                  overflowY: 'auto'
-                }}>
+                <Box className="storejs-dialog-details-section">
                   <Typography variant="h5">{selectedProduct.product_name}</Typography>
-                  <Typography variant="subtitle1" color="text.secondary">
+                  <Typography variant="subtitle1" className="storejs-product-brand">
                     {selectedProduct.brand}
                   </Typography>
                   <Chip
                     label={selectedProduct.category || 'Uncategorized'}
                     size="small"
-                    sx={{ mt: 1, mb: 2 }}
+                    className="storejs-product-category"
                   />
-                  <Typography variant="body1" paragraph>
+                  <Typography variant="body1" className="storejs-product-description">
                     {selectedProduct.description || 'No description available.'}
                   </Typography>
-                  <Divider sx={{ my: 2 }} />
+                  <Divider className="storejs-details-divider" />
 
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" className="storejs-variants-title">
                     Available Variants
                   </Typography>
                   {selectedVariants.map((variant) => (
-                    <Box key={variant.variant_id} sx={{ mb: 3 }}>
+                    <Box key={variant.variant_id} className="storejs-variant-item">
                       <Typography variant="subtitle1">
                         {variant.variant_name}: {variant.variant_value}
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="body1">
+                      <Box className="storejs-variant-price-container">
+                        <Typography variant="body1" className="storejs-variant-price">
                           Price: ${Number(variant.selling_price).toFixed(2)}
                           {variant.marked_price > variant.selling_price && (
-                            <Typography 
-                              component="span" 
-                              sx={{ 
-                                textDecoration: 'line-through',
-                                color: 'text.secondary',
-                                ml: 1
-                              }}
-                            >
+                            <Typography component="span" className="storejs-marked-price">
                               ${Number(variant.marked_price).toFixed(2)}
                             </Typography>
                           )}
                         </Typography>
-                        <Typography variant="body2" color={variant.stock_quantity > 0 ? 'success.main' : 'error'}>
+                        <Typography variant="body2" className={`storejs-stock-status ${variant.stock_quantity > 0 ? 'storejs-in-stock' : 'storejs-out-of-stock'}`}>
                           {variant.stock_quantity > 0 
                             ? `In Stock (${variant.stock_quantity})` 
                             : 'Out of Stock'}
                         </Typography>
                       </Box>
                       {variant.stock_quantity > 0 && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                        <Box className="storejs-quantity-control">
                           <Typography>Quantity:</Typography>
                           <TextField
                             type="number"
@@ -458,10 +404,10 @@ const Store = () => {
                               min: 0, 
                               max: variant.stock_quantity 
                             }}
-                            sx={{ width: '80px' }}
+                            className="storejs-quantity-input"
                             size="small"
                           />
-                          <Typography variant="caption">
+                          <Typography variant="caption" className="storejs-max-quantity">
                             Max: {variant.stock_quantity}
                           </Typography>
                         </Box>
@@ -472,12 +418,12 @@ const Store = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
+          <DialogActions className="storejs-dialog-actions">
+            <Button onClick={handleCloseDialog} className="storejs-cancel-button">Cancel</Button>
             <Button 
               onClick={handleAddToCartConfirm} 
               variant="contained" 
-              color="primary"
+              className="storejs-confirm-button"
               disabled={!selectedVariants.some(v => v.quantity > 0)}
             >
               Add to Cart

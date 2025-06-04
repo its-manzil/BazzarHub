@@ -26,7 +26,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // File upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, '/Users/manzil/Developer/All-Projects/BazzarHub/Backend/uploads');
+    cb(null, path.join(__dirname, 'uploads'));
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -53,7 +53,7 @@ const db = mysql.createPool({
   host: "localhost",
   user: "root",
   password: "manjil@123",
-  database: "BazzarHub",
+  database: "BazarHub",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -300,74 +300,11 @@ app.delete('/api/profile/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Order Routes
-app.get('/api/orders/:userId', verifyToken, async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    if (parseInt(userId) !== req.userId) {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
-
-    const [orders] = await db.query(
-      `SELECT o.order_id, o.total_amount, o.order_status, o.created_at 
-       FROM orders o
-       WHERE o.customer_id = ?
-       ORDER BY o.created_at DESC`,
-      [userId]
-    );
-
-    res.json({ orders });
-  } catch (error) {
-    console.error('Orders error:', error);
-    res.status(500).json({ message: 'Error fetching orders' });
-  }
-});
-
-app.put('/api/orders/:orderId/cancel', verifyToken, async (req, res) => {
-  try {
-    const orderId = req.params.orderId;
-    
-    // Verify the order belongs to the user
-    const [orders] = await db.query(
-      'SELECT customer_id, order_status FROM orders WHERE order_id = ?',
-      [orderId]
-    );
-    
-    if (orders.length === 0) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    
-    if (orders[0].customer_id !== req.userId) {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
-    
-    // Check if order can be cancelled (only pending orders)
-    if (orders[0].order_status !== 'pending') {
-      return res.status(400).json({ message: 'Only pending orders can be cancelled' });
-    }
-    
-    // Update order status
-    await db.query(
-      'UPDATE orders SET order_status = "cancelled" WHERE order_id = ?',
-      [orderId]
-    );
-    
-    res.json({ message: 'Order cancelled successfully' });
-  } catch (error) {
-    console.error('Cancel order error:', error);
-    res.status(500).json({ message: 'Error cancelling order' });
-  }
-});
-
-// Add this to your server.js after the other routes
-
-// Products Routes
+// Product Management Routes
 app.post('/api/products', upload.array('images', 5), async (req, res) => {
   try {
-    // Extract form data
     const { productName, brand, category, description, variants } = req.body;
     
-    // Basic validation
     if (!productName || !brand || !category || !description || !variants) {
       return res.status(400).json({ message: 'All fields are required' });
     }
@@ -385,7 +322,7 @@ app.post('/api/products', upload.array('images', 5), async (req, res) => {
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         await db.query(
-          'INSERT INTO item_images (product_id, image_url) VALUES (?, ?)',
+          'INSERT INTO product_images (product_id, image_url) VALUES (?, ?)',
           [productId, file.filename]
         );
         imageUrls.push(file.filename);
@@ -404,7 +341,6 @@ app.post('/api/products', upload.array('images', 5), async (req, res) => {
     }
 
     for (const variant of parsedVariants) {
-      // Validate variant data
       if (!variant.type || !variant.value || !variant.markedPrice || !variant.sellingPrice || !variant.stockQuantity) {
         return res.status(400).json({ message: 'All variant fields are required' });
       }
@@ -424,7 +360,6 @@ app.post('/api/products', upload.array('images', 5), async (req, res) => {
       );
     }
     
-    // Success response
     res.status(201).json({ 
       success: true,
       message: 'Product created successfully',
@@ -442,15 +377,11 @@ app.post('/api/products', upload.array('images', 5), async (req, res) => {
   }
 });
 
-// Add these endpoints to your existing server.js file
-
-// Get all products with variants and images
-app.get('/api/storeProducts', async (req, res) => {
+// Product Listing Routes
+app.get('/api/products', async (req, res) => {
   try {
-    // Get query parameters for filtering/sorting
-    const { category, sort } = req.query;
+    const { category, sort, search } = req.query;
 
-    // Base query
     let query = `
       SELECT 
         p.product_id, 
@@ -463,14 +394,18 @@ app.get('/api/storeProducts', async (req, res) => {
       WHERE 1=1
     `;
 
-    // Add category filter if provided
     const queryParams = [];
     if (category && category !== 'All') {
       query += ' AND p.category = ?';
       queryParams.push(category);
     }
 
-    // Add sorting
+    if (search) {
+      query += ' AND (p.product_name LIKE ? OR p.brand LIKE ? OR p.description LIKE ?)';
+      const searchTerm = `%${search}%`;
+      queryParams.push(searchTerm, searchTerm, searchTerm);
+    }
+
     if (sort) {
       switch (sort) {
         case 'newest':
@@ -482,18 +417,14 @@ app.get('/api/storeProducts', async (req, res) => {
         case 'alphabetical':
           query += ' ORDER BY p.product_name ASC';
           break;
-        // Price sorting will be handled after variants are fetched
       }
     } else {
       query += ' ORDER BY p.created_at DESC';
     }
 
-    // Get products
     const [products] = await db.query(query, queryParams);
 
-    // Get variants and images for each product
     for (const product of products) {
-      // Get variants
       const [variants] = await db.query(
         `SELECT 
           variant_id, 
@@ -508,34 +439,24 @@ app.get('/api/storeProducts', async (req, res) => {
       );
       product.variants = variants || [];
 
-      // Get images
       const [images] = await db.query(
-        'SELECT image_id, image_url FROM item_images WHERE product_id = ?',
+        'SELECT image_id, image_url FROM product_images WHERE product_id = ?',
         [product.product_id]
       );
       product.images = images || [];
 
-      // Try to get ratings (handle case where table doesn't exist)
-      try {
-        const [ratings] = await db.query(
-          `SELECT 
-            AVG(rating) as avg_rating,
-            COUNT(*) as review_count
-          FROM product_ratings
-          WHERE product_id = ?`,
-          [product.product_id]
-        );
-        product.rating = ratings[0]?.avg_rating || null;
-        product.reviewCount = ratings[0]?.review_count || 0;
-      } catch (error) {
-        // If ratings table doesn't exist or query fails
-        console.log('Ratings not available:', error.message);
-        product.rating = null;
-        product.reviewCount = 0;
-      }
+      const [ratings] = await db.query(
+        `SELECT 
+          AVG(rating) as avg_rating,
+          COUNT(*) as review_count
+        FROM product_ratings
+        WHERE product_id = ?`,
+        [product.product_id]
+      );
+      product.rating = ratings[0]?.avg_rating || null;
+      product.reviewCount = ratings[0]?.review_count || 0;
     }
 
-    // Handle price sorting if needed (must be done after variants are fetched)
     if (sort === 'priceHigh' || sort === 'priceLow') {
       products.sort((a, b) => {
         const getPrice = (product, type) => {
@@ -558,12 +479,10 @@ app.get('/api/storeProducts', async (req, res) => {
   }
 });
 
-// Get single product details
-app.get('/api/storeProducts/:id', async (req, res) => {
+app.get('/api/products/:id', async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Get product details
     const [products] = await db.query(
       `SELECT 
         p.product_id, 
@@ -583,7 +502,6 @@ app.get('/api/storeProducts/:id', async (req, res) => {
 
     const product = products[0];
 
-    // Get variants
     const [variants] = await db.query(
       `SELECT 
         variant_id, 
@@ -600,14 +518,12 @@ app.get('/api/storeProducts/:id', async (req, res) => {
     );
     product.variants = variants;
 
-    // Get images
     const [images] = await db.query(
-      'SELECT image_id, image_url FROM item_images WHERE product_id = ? ORDER BY image_id',
+      'SELECT image_id, image_url FROM product_images WHERE product_id = ? ORDER BY image_id',
       [productId]
     );
     product.images = images;
 
-    // Get ratings
     const [ratings] = await db.query(
       `SELECT 
         AVG(rating) as avg_rating,
@@ -619,13 +535,12 @@ app.get('/api/storeProducts/:id', async (req, res) => {
     product.rating = ratings[0]?.avg_rating || null;
     product.reviewCount = ratings[0]?.review_count || 0;
 
-    // Get similar products (by category)
     const [similarProducts] = await db.query(
       `SELECT 
         p.product_id, 
         p.product_name,
         p.brand,
-        (SELECT image_url FROM item_images WHERE product_id = p.product_id LIMIT 1) as main_image,
+        (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as main_image,
         (SELECT MIN(selling_price) FROM product_variants WHERE product_id = p.product_id) as min_price
       FROM products p
       WHERE p.category = ? AND p.product_id != ?
@@ -641,13 +556,67 @@ app.get('/api/storeProducts/:id', async (req, res) => {
   }
 });
 
-// Add to cart endpoint
+// Cart Routes
+app.get('/api/cart', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Get or create cart for user
+    let [cart] = await db.query(
+      'SELECT cart_id FROM carts WHERE user_id = ?',
+      [userId]
+    );
+
+    if (cart.length === 0) {
+      const [newCart] = await db.query(
+        'INSERT INTO carts (user_id) VALUES (?)',
+        [userId]
+      );
+      cart = [{ cart_id: newCart.insertId }];
+    }
+
+    // Get cart items with product details
+    const [cartItems] = await db.query(
+      `SELECT 
+        ci.cart_item_id,
+        ci.quantity,
+        ci.price,
+        p.product_id,
+        p.product_name,
+        p.brand,
+        pv.variant_id,
+        pv.variant_name,
+        pv.variant_value,
+        (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
+      FROM cart_items ci
+      JOIN products p ON ci.product_id = p.product_id
+      JOIN product_variants pv ON ci.variant_id = pv.variant_id
+      WHERE ci.user_id = ?`,
+      [userId]
+    );
+
+    // Calculate total
+    let subtotal = 0;
+    cartItems.forEach(item => {
+      subtotal += item.price * item.quantity;
+    });
+
+    res.json({
+      cartId: cart[0].cart_id,
+      items: cartItems,
+      subtotal: subtotal.toFixed(2)
+    });
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    res.status(500).json({ message: 'Error fetching cart' });
+  }
+});
+
 app.post('/api/cart', verifyToken, async (req, res) => {
   try {
-    const { userId } = req; // From verifyToken middleware
+    const { userId } = req;
     const { productId, variantId, quantity } = req.body;
 
-    // Validate input
     if (!productId || !variantId || !quantity || quantity < 1) {
       return res.status(400).json({ message: 'Invalid cart data' });
     }
@@ -719,55 +688,130 @@ app.post('/api/cart', verifyToken, async (req, res) => {
   }
 });
 
-// Add these endpoints to your existing server.js
+app.put('/api/cart/:itemId', verifyToken, async (req, res) => {
+  try {
+    const { userId } = req;
+    const itemId = req.params.itemId;
+    const { quantity } = req.body;
 
-// Get product comments
-app.get('/api/products/:id/comments', async (req, res) => {
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ message: 'Invalid quantity' });
+    }
+
+    // Verify item belongs to user and get variant info
+    const [items] = await db.query(
+      `SELECT ci.variant_id, pv.stock_quantity
+       FROM cart_items ci
+       JOIN product_variants pv ON ci.variant_id = pv.variant_id
+       WHERE ci.cart_item_id = ? AND ci.user_id = ?`,
+      [itemId, userId]
+    );
+
+    if (items.length === 0) {
+      return res.status(404).json({ message: 'Cart item not found' });
+    }
+
+    // Check stock availability
+    if (items[0].stock_quantity < quantity) {
+      return res.status(400).json({ 
+        message: 'Not enough stock available',
+        available: items[0].stock_quantity
+      });
+    }
+
+    // Update quantity
+    await db.query(
+      'UPDATE cart_items SET quantity = ? WHERE cart_item_id = ? AND user_id = ?',
+      [quantity, itemId, userId]
+    );
+
+    res.json({ 
+      success: true,
+      message: 'Cart item updated'
+    });
+  } catch (error) {
+    console.error('Error updating cart item:', error);
+    res.status(500).json({ message: 'Error updating cart item' });
+  }
+});
+
+app.delete('/api/cart/:itemId', verifyToken, async (req, res) => {
+  try {
+    const { userId } = req;
+    const itemId = req.params.itemId;
+
+    // Verify item belongs to user
+    const [result] = await db.query(
+      'DELETE FROM cart_items WHERE cart_item_id = ? AND user_id = ?',
+      [itemId, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Cart item not found' });
+    }
+
+    res.json({ 
+      success: true,
+      message: 'Cart item removed'
+    });
+  } catch (error) {
+    console.error('Error removing cart item:', error);
+    res.status(500).json({ message: 'Error removing cart item' });
+  }
+});
+
+// Review Routes
+app.get('/api/products/:id/reviews', async (req, res) => {
   try {
     const productId = req.params.id;
 
-    const [comments] = await db.query(
+    const [reviews] = await db.query(
       `SELECT 
+        pr.rating_id,
+        pr.rating,
+        pr.created_at,
         pc.comment_id,
         pc.text,
-        pc.created_at,
         c.id as user_id,
         c.full_name,
         c.profile_picture,
         (SELECT AVG(rating) FROM product_ratings WHERE product_id = ?) as avg_rating
-      FROM product_comments pc
-      JOIN customers c ON pc.user_id = c.id
-      WHERE pc.product_id = ?
-      ORDER BY pc.created_at DESC`,
+      FROM product_ratings pr
+      LEFT JOIN product_comments pc ON pr.product_id = pc.product_id AND pr.user_id = pc.user_id
+      JOIN customers c ON pr.user_id = c.id
+      WHERE pr.product_id = ?
+      ORDER BY pr.created_at DESC`,
       [productId, productId]
     );
 
-    // Get images for each comment
-    for (const comment of comments) {
-      const [images] = await db.query(
-        'SELECT image_url FROM comment_images WHERE comment_id = ?',
-        [comment.comment_id]
-      );
-      comment.images = images.map(img => img.image_url);
+    // Get images for each review
+    for (const review of reviews) {
+      if (review.comment_id) {
+        const [images] = await db.query(
+          'SELECT image_url FROM comment_images WHERE comment_id = ?',
+          [review.comment_id]
+        );
+        review.images = images.map(img => img.image_url);
+      } else {
+        review.images = [];
+      }
     }
 
-    res.json(comments);
+    res.json(reviews);
   } catch (error) {
-    console.error('Error fetching comments:', error);
-    res.status(500).json({ message: 'Error fetching comments' });
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ message: 'Error fetching reviews' });
   }
 });
 
-// Add product comment with rating
-app.post('/api/products/:id/comments', verifyToken, upload.array('images', 5), async (req, res) => {
+app.post('/api/products/:id/reviews', verifyToken, upload.array('images', 5), async (req, res) => {
   try {
     const productId = req.params.id;
     const userId = req.userId;
-    const { comment, rating } = req.body;
+    const { rating, comment } = req.body;
 
-    // Validate input
-    if (!comment || !rating) {
-      return res.status(400).json({ message: 'Comment and rating are required' });
+    if (!rating || !comment) {
+      return res.status(400).json({ message: 'Rating and comment are required' });
     }
 
     // Start transaction
@@ -784,14 +828,27 @@ app.post('/api/products/:id/comments', verifyToken, upload.array('images', 5), a
     // Insert comment
     const [commentResult] = await db.query(
       `INSERT INTO product_comments (product_id, user_id, text)
-       VALUES (?, ?, ?)`,
-      [productId, userId, comment]
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE text = ?`,
+      [productId, userId, comment, comment]
     );
 
-    const commentId = commentResult.insertId;
+    const commentId = commentResult.insertId || (
+      await db.query(
+        'SELECT comment_id FROM product_comments WHERE product_id = ? AND user_id = ?',
+        [productId, userId]
+      )
+    )[0][0].comment_id;
 
     // Process uploaded images
     if (req.files && req.files.length > 0) {
+      // First delete existing images for this comment
+      await db.query(
+        'DELETE FROM comment_images WHERE comment_id = ?',
+        [commentId]
+      );
+
+      // Then insert new images
       for (const file of req.files) {
         await db.query(
           'INSERT INTO comment_images (comment_id, image_url) VALUES (?, ?)',
@@ -803,46 +860,44 @@ app.post('/api/products/:id/comments', verifyToken, upload.array('images', 5), a
     // Commit transaction
     await db.query('COMMIT');
 
-    // Get the newly created comment with user details
-    const [newComment] = await db.query(
+    // Get the newly created review with user details
+    const [newReview] = await db.query(
       `SELECT 
+        pr.rating_id,
+        pr.rating,
+        pr.created_at,
         pc.comment_id,
         pc.text,
-        pc.created_at,
         c.id as user_id,
         c.full_name,
         c.profile_picture
-      FROM product_comments pc
-      JOIN customers c ON pc.user_id = c.id
-      WHERE pc.comment_id = ?`,
-      [commentId]
+      FROM product_ratings pr
+      LEFT JOIN product_comments pc ON pr.product_id = pc.product_id AND pr.user_id = pc.user_id
+      JOIN customers c ON pr.user_id = c.id
+      WHERE pr.product_id = ? AND pr.user_id = ?`,
+      [productId, userId]
     );
 
-    // Get images for the new comment
+    // Get images for the new review
     const [images] = await db.query(
       'SELECT image_url FROM comment_images WHERE comment_id = ?',
       [commentId]
     );
 
     const response = {
-      ...newComment[0],
-      images: images.map(img => img.image_url),
-      rating: parseFloat(rating)
+      ...newReview[0],
+      images: images.map(img => img.image_url)
     };
 
     res.status(201).json(response);
   } catch (error) {
     await db.query('ROLLBACK');
-    console.error('Error adding comment:', error);
-    res.status(500).json({ message: 'Error adding comment' });
+    console.error('Error adding review:', error);
+    res.status(500).json({ message: 'Error adding review' });
   }
 });
 
-
-//Search algorithm is being used here.
-// Add these new endpoints to your existing server.js
-
-// Search endpoint with typo tolerance and category filtering
+// Search Routes
 app.get('/api/search', async (req, res) => {
   try {
     const { q, category } = req.query;
@@ -863,7 +918,7 @@ app.get('/api/search', async (req, res) => {
         p.description,
         p.category,
         GROUP_CONCAT(DISTINCT pv.variant_name SEPARATOR ', ') as variant_names,
-        (SELECT image_url FROM item_images WHERE product_id = p.product_id LIMIT 1) as image_url,
+        (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url,
         MIN(pv.selling_price) as min_price,
         MAX(pv.marked_price) as max_price
       FROM products p
@@ -884,7 +939,7 @@ app.get('/api/search', async (req, res) => {
 
     res.json({ 
       success: true,
-      results: results.slice(0, 50), // Limit to top 50 results
+      results: results.slice(0, 50),
       suggestion: suggestion
     });
   } catch (error) {
@@ -896,7 +951,6 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
-// Get all categories for search filters
 app.get('/api/categories', async (req, res) => {
   try {
     const [categories] = await db.query(`
@@ -916,14 +970,13 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// Advanced search function with typo tolerance and suggestions
+// Search helper functions
 function searchProducts(products, query) {
   const queryTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
-  const suggestionThreshold = 0.7; // Similarity threshold for suggestions
+  const suggestionThreshold = 0.7;
   let bestSuggestion = null;
   let bestScore = 0;
 
-  // Score each product
   const scoredProducts = products.map(product => {
     const productName = product.product_name.toLowerCase();
     const brand = product.brand.toLowerCase();
@@ -934,16 +987,13 @@ function searchProducts(products, query) {
     let typoToleranceScore = 0;
     
     queryTerms.forEach(term => {
-      // Exact matches
       if (productName.includes(term)) exactMatchScore += 10;
       if (brand.includes(term)) exactMatchScore += 8;
       if (category.includes(term)) exactMatchScore += 5;
       
-      // Partial matches (starts with)
       if (productName.startsWith(term)) partialMatchScore += 5;
       if (brand.startsWith(term)) partialMatchScore += 4;
       
-      // Check for possible typos and track best suggestion
       if (exactMatchScore === 0 && partialMatchScore === 0) {
         const productWords = productName.split(/\s+/);
         
@@ -966,10 +1016,7 @@ function searchProducts(products, query) {
     };
   });
   
-  // Sort by score (descending)
   const sortedResults = scoredProducts.sort((a, b) => b._score - a._score);
-  
-  // Only include products with some match
   const filteredResults = sortedResults.filter(p => p._score > 0);
   
   return {
@@ -978,7 +1025,6 @@ function searchProducts(products, query) {
   };
 }
 
-// String similarity function (0 to 1)
 function stringSimilarity(s1, s2) {
   const longer = s1.length > s2.length ? s1 : s2;
   const shorter = s1.length > s2.length ? s2 : s1;
@@ -986,11 +1032,9 @@ function stringSimilarity(s1, s2) {
   
   if (longerLength === 0) return 1.0;
   
-  // Return similarity ratio
   return (longerLength - levenshteinDistance(longer, shorter)) / longerLength;
 }
 
-// Levenshtein distance for typo tolerance
 function levenshteinDistance(a, b) {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
@@ -1020,9 +1064,7 @@ function levenshteinDistance(a, b) {
   return matrix[b.length][a.length];
 }
 
-
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-  console.log(`JWT Secret: ${JWT_SECRET.substring(0, 10)}... (only shown for debugging)`);
 });

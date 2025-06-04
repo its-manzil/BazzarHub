@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
-  Button, Typography, IconButton,
-  Snackbar, Alert, CircularProgress, Divider, Rating
+  Button, Typography, IconButton, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Checkbox, TextField, Snackbar, Alert,
+  CircularProgress, Divider, Rating, Tabs, Tab, Box
 } from '@mui/material';
 import {
-  ShoppingCart, Favorite, Share, 
-  ArrowBack, ArrowForward, ZoomIn
+  ShoppingCart, Favorite, Share, ArrowBack, ZoomIn
 } from '@mui/icons-material';
 import Nav from './Nav';
 import Search from './Search';
@@ -27,7 +27,8 @@ const ProductDetails = () => {
   const [quantities, setQuantities] = useState({});
   const [tabValue, setTabValue] = useState(0);
   const [comments, setComments] = useState([]);
-
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -44,7 +45,7 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8099/api/storeProducts/${id}`);
+        const response = await axios.get(`http://localhost:8099/api/Products/${id}`);
         const productData = response.data;
         
         if (productData.variants) {
@@ -58,10 +59,8 @@ const ProductDetails = () => {
           const initialQuantities = {};
           
           productData.variants.forEach(variant => {
-            if (variant.stock_quantity > 0) {
-              initialVariants[variant.variant_id] = false;
-              initialQuantities[variant.variant_id] = 1;
-            }
+            initialVariants[variant.variant_id] = false;
+            initialQuantities[variant.variant_id] = 1;
           });
           
           setSelectedVariants(initialVariants);
@@ -89,18 +88,6 @@ const ProductDetails = () => {
 
   const handleImageClick = (index) => {
     setActiveImageIndex(index);
-  };
-
-  const handleNextImage = () => {
-    setActiveImageIndex((prev) => 
-      prev === product.images.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const handlePrevImage = () => {
-    setActiveImageIndex((prev) => 
-      prev === 0 ? product.images.length - 1 : prev - 1
-    );
   };
 
   const toggleVariantSelection = (variantId) => {
@@ -190,46 +177,44 @@ const ProductDetails = () => {
     }
   };
 
-  const handleAddToWishlist = () => {
+  const handleAddReview = async () => {
     if (!isLoggedIn) {
       setSnackbar({
         open: true,
-        message: 'Please login to add items to wishlist',
+        message: 'Please login to submit a review',
         severity: 'error'
       });
       navigate('/login');
       return;
     }
 
-    setWishlisted(!wishlisted);
-    setSnackbar({
-      open: true,
-      message: wishlisted ? 'Removed from wishlist' : 'Added to wishlist',
-      severity: 'success'
-    });
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product.product_name,
-        text: `Check out this ${product.product_name} on our store!`,
-        url: window.location.href,
-      })
-      .catch(() => {
-        navigator.clipboard.writeText(window.location.href);
-        setSnackbar({
-          open: true,
-          message: 'Link copied to clipboard!',
-          severity: 'success'
-        });
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:8099/api/products/${id}/comments`, {
+        comment: reviewText,
+        rating: reviewRating
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
+
+      const commentsResponse = await axios.get(`http://localhost:8099/api/products/${id}/comments`);
+      setComments(commentsResponse.data);
+      
+      setReviewText('');
+      setReviewRating(0);
+      
       setSnackbar({
         open: true,
-        message: 'Link copied to clipboard!',
+        message: 'Review submitted successfully!',
         severity: 'success'
+      });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || 'Failed to submit review',
+        severity: 'error'
       });
     }
   };
@@ -289,7 +274,30 @@ const ProductDetails = () => {
         </Button>
 
         <div className="product-content">
-          <div className="product-images">
+          {/* Image Section (40%) */}
+          <div className="product-images-section">
+            <div className="main-image-container">
+              {product.images?.length > 0 ? (
+                <>
+                  <img
+                    src={getMainImageUrl(product.images[activeImageIndex]?.image_url)}
+                    alt={product.product_name}
+                    className="main-image"
+                  />
+                  <button 
+                    className="zoom-button"
+                    onClick={() => window.open(getMainImageUrl(product.images[activeImageIndex]?.image_url), '_blank')}
+                  >
+                    <ZoomIn />
+                  </button>
+                </>
+              ) : (
+                <div className="no-image">
+                  <Typography variant="body1">No Image Available</Typography>
+                </div>
+              )}
+            </div>
+            
             <div className="thumbnail-container">
               {product.images?.map((image, index) => (
                 <div
@@ -304,43 +312,10 @@ const ProductDetails = () => {
                 </div>
               ))}
             </div>
-
-            <div className="main-image-container">
-              {product.images?.length > 0 ? (
-                <>
-                  <div className="main-image-wrapper">
-                    <img
-                      src={getMainImageUrl(product.images[activeImageIndex]?.image_url)}
-                      alt={product.product_name}
-                      className="main-image"
-                    />
-                    {product.images.length > 1 && (
-                      <>
-                        <button className="nav-button prev" onClick={handlePrevImage}>
-                          <ArrowBack />
-                        </button>
-                        <button className="nav-button next" onClick={handleNextImage}>
-                          <ArrowForward />
-                        </button>
-                      </>
-                    )}
-                    <button 
-                      className="zoom-button"
-                      onClick={() => window.open(getMainImageUrl(product.images[activeImageIndex]?.image_url), '_blank')}
-                    >
-                      <ZoomIn />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="no-image">
-                  <Typography variant="body1">No Image Available</Typography>
-                </div>
-              )}
-            </div>
           </div>
 
-          <div className="product-info">
+          {/* Product Info Section (60%) */}
+          <div className="product-info-section">
             <Typography variant="h4" className="product-title">
               {product.product_name}
             </Typography>
@@ -368,95 +343,109 @@ const ProductDetails = () => {
             
             {product.variants?.length > 0 && (
               <div className="variants-section">
-                <Typography variant="subtitle1" className="section-title">
-                  Variants:
+                <Typography variant="h6" className="section-title">
+                  Available Variants
                 </Typography>
-                <div className="variants-grid">
-                  {product.variants.map((variant) => (
-                    <div 
-                      key={variant.variant_id}
-                      className={`variant-card ${variant.stock_quantity <= 0 ? 'disabled' : ''} ${selectedVariants[variant.variant_id] ? 'selected' : ''}`}
-                    >
-                      <div className="variant-content">
-                        <Typography className="variant-name">
-                          {variant.variant_name}: {variant.variant_value}
-                        </Typography>
-                        <Typography className="variant-price">
-                          ${variant.selling_price.toFixed(2)}
-                        </Typography>
-                        <Typography className={`stock-status ${variant.stock_quantity > 0 ? 'in-stock' : 'out-of-stock'}`}>
-                          {variant.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
-                        </Typography>
-                      </div>
-                      
-                      {variant.stock_quantity > 0 && (
-                        <div className="variant-checkbox">
-                          <input
-                            type="checkbox"
-                            id={`variant-${variant.variant_id}`}
-                            checked={selectedVariants[variant.variant_id] || false}
-                            onChange={() => toggleVariantSelection(variant.variant_id)}
-                            disabled={variant.stock_quantity <= 0}
-                          />
-                          <label htmlFor={`variant-${variant.variant_id}`}>Select</label>
-                        </div>
-                      )}
-                      
-                      <div className="variant-quantity">
-                        <button 
-                          className="quantity-btn minus"
-                          onClick={() => handleQuantityChange(variant.variant_id, (quantities[variant.variant_id] || 1) - 1)}
+                
+                <TableContainer component={Paper} className="variants-table">
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Select</TableCell>
+                        <TableCell>Variant</TableCell>
+                        <TableCell>MP (Rs.)</TableCell>
+                        <TableCell>SP (Rs.)</TableCell>
+                        <TableCell>Stock</TableCell>
+                        <TableCell>Quantity</TableCell>
+                        <TableCell>Price (Rs.)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {product.variants.map((variant) => (
+                        <TableRow 
+                          key={variant.variant_id}
+                          className={variant.stock_quantity <= 0 ? 'out-of-stock' : ''}
                         >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          value={quantities[variant.variant_id] || 1}
-                          onChange={(e) => handleQuantityChange(variant.variant_id, e.target.value)}
-                          min="1"
-                          max={variant.stock_quantity}
-                          className="quantity-input"
-                        />
-                        <button 
-                          className="quantity-btn plus"
-                          onClick={() => handleQuantityChange(variant.variant_id, (quantities[variant.variant_id] || 1) + 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedVariants[variant.variant_id] || false}
+                              onChange={() => toggleVariantSelection(variant.variant_id)}
+                              disabled={variant.stock_quantity <= 0}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {variant.variant_name}: {variant.variant_value}
+                          </TableCell>
+                          <TableCell>{variant.marked_price.toFixed(2)}</TableCell>
+                          <TableCell>{variant.selling_price.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <span className={variant.stock_quantity > 0 ? 'in-stock' : 'out-of-stock'}>
+                              {variant.stock_quantity > 0 ? variant.stock_quantity : 'Out of Stock'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              type="number"
+                              value={quantities[variant.variant_id] || 1}
+                              onChange={(e) => handleQuantityChange(variant.variant_id, e.target.value)}
+                              size="small"
+                              inputProps={{
+                                min: 1,
+                                max: variant.stock_quantity
+                              }}
+                              disabled={!selectedVariants[variant.variant_id] || variant.stock_quantity <= 0}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {selectedVariants[variant.variant_id] ? 
+                              (variant.selling_price * (quantities[variant.variant_id] || 1)).toFixed(2) : 
+                              '0.00'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                
+                <div className="total-price-section">
+                  <Typography variant="h6">
+                    Total Amount: Rs.{calculateTotalPrice().toFixed(2)}
+                  </Typography>
                 </div>
               </div>
             )}
             
             <div className="action-buttons">
-              <div className="add-to-cart-container">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className="add-to-cart-btn"
-                  startIcon={<ShoppingCart />}
-                  onClick={handleAddToCart}
-                >
-                  Add to Cart
-                </Button>
-                <div className="total-price">
-                  Total: ${calculateTotalPrice().toFixed(2)}
-                </div>
-              </div>
+              <Button
+                variant="contained"
+                color="primary"
+                className="add-to-cart-btn"
+                startIcon={<ShoppingCart />}
+                onClick={handleAddToCart}
+                fullWidth
+                size="large"
+              >
+                Add to Cart
+              </Button>
               
               <div className="secondary-actions">
                 <IconButton
                   color={wishlisted ? 'error' : 'default'}
-                  onClick={handleAddToWishlist}
+                  onClick={() => setWishlisted(!wishlisted)}
                   className="wishlist-btn"
                 >
                   <Favorite />
                 </IconButton>
                 
                 <IconButton
-                  onClick={handleShare}
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    setSnackbar({
+                      open: true,
+                      message: 'Link copied to clipboard!',
+                      severity: 'success'
+                    });
+                  }}
                   className="share-btn"
                 >
                   <Share />
@@ -466,29 +455,19 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        <div className="product-tabs">
-          <div className="tabs-header">
-            <button 
-              className={`tab-btn ${tabValue === 0 ? 'active' : ''}`}
-              onClick={() => setTabValue(0)}
-            >
-              Description
-            </button>
-            <button 
-              className={`tab-btn ${tabValue === 1 ? 'active' : ''}`}
-              onClick={() => setTabValue(1)}
-            >
-              Specifications
-            </button>
-            <button 
-              className={`tab-btn ${tabValue === 2 ? 'active' : ''}`}
-              onClick={() => setTabValue(2)}
-            >
-              Reviews ({comments.length})
-            </button>
-          </div>
+        {/* Product Tabs Section */}
+        <div className="product-tabs-section">
+          <Tabs 
+            value={tabValue} 
+            onChange={(e, newValue) => setTabValue(newValue)}
+            variant="fullWidth"
+          >
+            <Tab label="Description" />
+            <Tab label="Specifications" />
+            <Tab label={`Reviews (${comments.length})`} />
+          </Tabs>
           
-          <div className="tab-content">
+          <Box className="tab-content" p={3}>
             {tabValue === 0 && (
               <Typography variant="body1" className="description">
                 {product.description || 'No description available.'}
@@ -498,25 +477,91 @@ const ProductDetails = () => {
             {tabValue === 1 && (
               <div className="specifications">
                 <Typography variant="h6" className="section-title">Product Specifications</Typography>
-                <div className="specs-grid">
-                  {product.variants?.map((variant) => (
-                    <React.Fragment key={variant.variant_id}>
-                      <div className="spec-name">{variant.variant_name}:</div>
-                      <div className="spec-value">{variant.variant_value}</div>
-                    </React.Fragment>
-                  ))}
-                  <div className="spec-name">SKU:</div>
-                  <div className="spec-value">{product.variants?.[0]?.sku || 'N/A'}</div>
-                </div>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableBody>
+                      {product.variants?.map((variant) => (
+                        <TableRow key={variant.variant_id}>
+                          <TableCell component="th" scope="row">
+                            {variant.variant_name}
+                          </TableCell>
+                          <TableCell>{variant.variant_value}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell component="th" scope="row">SKU</TableCell>
+                        <TableCell>{product.variants?.[0]?.sku || 'N/A'}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </div>
             )}
             
             {tabValue === 2 && (
               <div className="reviews-section">
-                {/* Reviews content would go here */}
+                {comments.map((comment) => (
+                  <div key={comment.comment_id} className="review-item">
+                    <div className="review-header">
+                      <Typography variant="subtitle1" className="review-author">
+                        {comment.full_name}
+                      </Typography>
+                      <Rating value={comment.avg_rating || 0} readOnly precision={0.5} />
+                      <Typography variant="caption" className="review-date">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" className="review-text">
+                      {comment.text}
+                    </Typography>
+                    {comment.images?.length > 0 && (
+                      <div className="review-images">
+                        {comment.images.map((img, idx) => (
+                          <img 
+                            key={idx} 
+                            src={getMainImageUrl(img)} 
+                            alt={`Review ${idx + 1}`} 
+                            className="review-image"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <Divider className="review-divider" />
+                  </div>
+                ))}
+                
+                {isLoggedIn && (
+                  <div className="add-review-section">
+                    <Typography variant="h6">Add Your Review</Typography>
+                    <Rating
+                      value={reviewRating}
+                      onChange={(e, newValue) => setReviewRating(newValue)}
+                      precision={0.5}
+                    />
+                    <TextField
+                      multiline
+                      rows={4}
+                      variant="outlined"
+                      fullWidth
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      placeholder="Share your thoughts about this product..."
+                      className="review-textfield"
+                    />
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleAddReview}
+                      disabled={!reviewText || reviewRating === 0}
+                      className="submit-review-btn"
+                    >
+                      Submit Review
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </Box>
         </div>
       </div>
 
@@ -524,16 +569,15 @@ const ProductDetails = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        className="snackbar"
       >
         <Alert 
           onClose={() => setSnackbar({ ...snackbar, open: false })} 
           severity={snackbar.severity}
-          className="alert"
         >
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <br/><br/><br/><br/><br/><br/>
     </>
   );
 };

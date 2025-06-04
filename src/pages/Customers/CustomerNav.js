@@ -105,7 +105,7 @@ const CustomerNav = () => {
         
         <button 
           className="customer-nav-btn"
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/customerprofile')}
         >
           <i className="fas fa-user"></i> Profile
         </button>
@@ -119,7 +119,7 @@ const CustomerNav = () => {
         
         <button 
           className="customer-nav-btn"
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate('/usersetting')}
         >
           <i className="fas fa-cog"></i> Settings
         </button>
