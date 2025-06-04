@@ -27,7 +27,7 @@ const [isLogin, setIsLogin] = useState(true);
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      navigate('/profile');
+      navigate('/customerprofile');
     }
   }, [navigate]);
 
@@ -125,7 +125,7 @@ const [isLogin, setIsLogin] = useState(true);
       if (response.ok) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.user.id);
-        navigate('/profile');
+        navigate('/customerprofile');
       } else {
         setServerError(data.message || 'Login failed');
       }

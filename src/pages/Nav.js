@@ -11,7 +11,7 @@ function Nav() {
   const navItems = [
     { path: "/Home", icon: <IoHome />, text: "Home" },
     { path: "/Store", icon: <FaHotel />, text: "Store" },
-    { path: "/Profile", icon: <CgProfile />, text: "Profile" },
+    { path: "/CustomerProfile", icon: <CgProfile />, text: "Profile" },
     { path: "/About", icon: <FaBookOpen />, text: "About" },
     { path: "/Contact", icon: <MdContactPhone />, text: "Contact" }
   ];

@@ -7,13 +7,14 @@ import {
   CircularProgress, Divider, Rating, Tabs, Tab, Box
 } from '@mui/material';
 import {
-  ShoppingCart, Favorite, Share, ArrowBack, ZoomIn
+  Favorite, Share, ArrowBack, ZoomIn
 } from '@mui/icons-material';
 import Nav from './Nav';
 import Search from './Search';
 import Logo from './Logo';
 import CartLogo from './CartLogo';
 import './productDetails.css';
+import AddToCartButton from './AddToCartButton';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -37,10 +38,28 @@ const ProductDetails = () => {
   });
   const [wishlisted, setWishlisted] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, []);
+// In your useEffect for checking login status, add token validation
+useEffect(() => {
+  const checkAuthStatus = async () => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        // Optionally verify token with backend
+        await axios.get('http://localhost:8099/api/verify-token', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsLoggedIn(true);
+      } catch (error) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+  };
+
+  checkAuthStatus();
+}, []);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -121,60 +140,6 @@ const ProductDetails = () => {
       }
       return total;
     }, 0);
-  };
-
-  const handleAddToCart = async () => {
-    const selectedVariantIds = Object.keys(selectedVariants).filter(id => selectedVariants[id]);
-    
-    if (selectedVariantIds.length === 0) {
-      setSnackbar({
-        open: true,
-        message: 'Please select at least one variant',
-        severity: 'error'
-      });
-      return;
-    }
-
-    if (!isLoggedIn) {
-      setSnackbar({
-        open: true,
-        message: 'Please login to add items to cart',
-        severity: 'error'
-      });
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      const requests = selectedVariantIds.map(variantId => 
-        axios.post('http://localhost:8099/api/cart', {
-          productId: id,
-          variantId,
-          quantity: quantities[variantId] || 1
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-      );
-
-      await Promise.all(requests);
-
-      setSnackbar({
-        open: true,
-        message: 'Products added to cart successfully!',
-        severity: 'success'
-      });
-      
-      navigate("/Cart");
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || 'Failed to add to cart',
-        severity: 'error'
-      });
-    }
   };
 
   const handleAddReview = async () => {
@@ -416,17 +381,33 @@ const ProductDetails = () => {
             )}
             
             <div className="action-buttons">
-              <Button
-                variant="contained"
-                color="primary"
-                className="add-to-cart-btn"
-                startIcon={<ShoppingCart />}
-                onClick={handleAddToCart}
-                fullWidth
-                size="large"
-              >
-                Add to Cart
-              </Button>
+              <AddToCartButton
+  productId={id}
+  selectedVariants={selectedVariants}
+  quantities={quantities}
+  disabled={Object.keys(selectedVariants).filter(id => selectedVariants[id]).length === 0}
+  onSuccess={() => {
+    setSnackbar({
+      open: true,
+      message: 'Product added to cart',
+      severity: 'success'
+    });
+  }}
+  onError={(message) => {
+    setSnackbar({
+      open: true,
+      message: message || 'Failed to add to cart',
+      severity: 'error'
+    });
+  }}
+  onNotLoggedIn={() => {
+    setSnackbar({
+      open: true,
+      message: 'Please login to add product to cart',
+      severity: 'error'
+    });
+  }}
+/>
               
               <div className="secondary-actions">
                 <IconButton
@@ -567,12 +548,13 @@ const ProductDetails = () => {
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={5000}  // Changed to 5 seconds
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
         <Alert 
           onClose={() => setSnackbar({ ...snackbar, open: false })} 
           severity={snackbar.severity}
+          sx={{ width: '100%' }}
         >
           {snackbar.message}
         </Alert>
