@@ -417,6 +417,9 @@ app.get('/api/products', async (req, res) => {
         case 'alphabetical':
           query += ' ORDER BY p.product_name ASC';
           break;
+        default:
+          query += ' ORDER BY p.created_at DESC';
+          break;
       }
     } else {
       query += ' ORDER BY p.created_at DESC';

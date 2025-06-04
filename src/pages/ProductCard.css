@@ -79,12 +79,12 @@
   color: #333;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2; /* Add this for standard compliance */
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 3rem;
   transition: color 0.3s ease;
 }
-
 .product-card:hover .product-title {
   color: #4a6cf7;
 }
