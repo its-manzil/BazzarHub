@@ -382,7 +382,7 @@ useEffect(() => {
             
             <div className="action-buttons">
               <AddToCartButton
-  productId={id}
+                productId={id}
   selectedVariants={selectedVariants}
   quantities={quantities}
   disabled={Object.keys(selectedVariants).filter(id => selectedVariants[id]).length === 0}
@@ -406,8 +406,8 @@ useEffect(() => {
       message: 'Please login to add product to cart',
       severity: 'error'
     });
-  }}
-/>
+                }}
+              />
               
               <div className="secondary-actions">
                 <IconButton
