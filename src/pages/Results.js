@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./results.css";
+import Search from "./Search";
+import Nav from "./Nav";
 import ProductCard from "./ProductCard";
 
 function Results() {
@@ -98,6 +100,9 @@ function Results() {
   }
 
   return (
+  <>
+  <Search/>
+  <Nav/>
     <div className="results-container">
       <div className="search-filters">
         <h3>Categories</h3>
@@ -140,11 +145,13 @@ function Results() {
               key={product.product_id} 
               product={product} 
               showPriceRange={true}
+
             />
           ))}
         </div>
       )}
     </div>
+    </>
   );
 }
 
