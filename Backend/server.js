@@ -1045,6 +1045,187 @@ app.put('/api/cart/:itemId', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Error updating cart quantity' });
   }
 });
+
+// Add to your server.js after the cart routes
+
+// Order Routes
+app.post('/api/orders', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { items, shipping_address, payment_method, payment_details } = req.body;
+
+    // Validate input
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Invalid order items' });
+    }
+
+    if (!shipping_address || !payment_method) {
+      return res.status(400).json({ message: 'Shipping address and payment method are required' });
+    }
+
+    // Start transaction
+    await db.query('START TRANSACTION');
+
+    // Calculate total amount
+    let totalAmount = 0;
+    for (const item of items) {
+      const [variant] = await db.query(
+        'SELECT selling_price FROM product_variants WHERE variant_id = ?',
+        [item.variant_id]
+      );
+      
+      if (!variant.length) {
+        await db.query('ROLLBACK');
+        return res.status(400).json({ message: `Variant ${item.variant_id} not found` });
+      }
+
+      totalAmount += variant[0].selling_price * item.quantity;
+    }
+
+    // Create order
+    const [orderResult] = await db.query(
+      `INSERT INTO orders 
+       (user_id, total_amount, payment_method, shipping_address, status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        userId,
+        totalAmount,
+        payment_method,
+        JSON.stringify(shipping_address),
+        'processing'
+      ]
+    );
+
+    const orderId = orderResult.insertId;
+
+    // Create order items
+    for (const item of items) {
+      // Get product and variant details
+      const [product] = await db.query(
+        `SELECT 
+          p.product_name,
+          pv.variant_name,
+          pv.variant_value,
+          pv.selling_price
+        FROM products p
+        JOIN product_variants pv ON p.product_id = pv.product_id
+        WHERE pv.variant_id = ?`,
+        [item.variant_id]
+      );
+
+      if (!product.length) {
+        await db.query('ROLLBACK');
+        return res.status(400).json({ message: `Product for variant ${item.variant_id} not found` });
+      }
+
+      await db.query(
+        `INSERT INTO order_items
+         (order_id, product_id, variant_id, product_name, variant_name, variant_value, quantity, unit_price)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          orderId,
+          item.product_id,
+          item.variant_id,
+          product[0].product_name,
+          product[0].variant_name,
+          product[0].variant_value,
+          item.quantity,
+          product[0].selling_price
+        ]
+      );
+
+      // Update stock
+      await db.query(
+        `UPDATE product_variants 
+         SET stock_quantity = stock_quantity - ?
+         WHERE variant_id = ?`,
+        [item.quantity, item.variant_id]
+      );
+
+      // Remove from cart
+      await db.query(
+        `DELETE FROM cart_items 
+         WHERE user_id = ? AND product_id = ? AND variant_id = ?`,
+        [userId, item.product_id, item.variant_id]
+      );
+    }
+
+    // Create payment record
+    await db.query(
+      `INSERT INTO payments
+       (order_id, method, details, amount, status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        orderId,
+        payment_method,
+        JSON.stringify(payment_details),
+        totalAmount,
+        payment_method === 'cash' ? 'pending' : 'completed'
+      ]
+    );
+
+    // Commit transaction
+    await db.query('COMMIT');
+
+    // Generate invoice (you would implement this function)
+    const invoiceUrl = await generateInvoice(orderId);
+
+    res.status(201).json({
+      order_id: orderId,
+      total_amount: totalAmount,
+      payment_method,
+      invoice_url: invoiceUrl
+    });
+
+  } catch (error) {
+    await db.query('ROLLBACK');
+    console.error('Order error:', error);
+    res.status(500).json({ message: 'Error creating order' });
+  }
+});
+
+// Invoice generation (mock function - you would implement this)
+async function generateInvoice(orderId) {
+  // In a real implementation, you would use a PDF generation library
+  // like pdfkit, puppeteer, or a dedicated service
+  const invoiceName = `invoice_${orderId}.pdf`;
+  const invoicePath = path.join(__dirname, 'uploads', invoiceName);
+  
+  // Mock implementation - just creates an empty file
+  require('fs').writeFileSync(invoicePath, '');
+  
+  return invoiceName;
+}
+
+app.get('/api/orders/:orderId/invoice', verifyToken, async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.userId;
+
+    // Verify order belongs to user
+    const [order] = await db.query(
+      'SELECT 1 FROM orders WHERE order_id = ? AND user_id = ?',
+      [orderId, userId]
+    );
+
+    if (order.length === 0) {
+      return res.status(404).json({ message: 'Order not found or not authorized' });
+    }
+
+    const invoicePath = path.join(__dirname, 'uploads', `invoice_${orderId}.pdf`);
+
+    // Check if invoice exists
+    if (!require('fs').existsSync(invoicePath)) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+
+    res.download(invoicePath);
+
+  } catch (error) {
+    console.error('Invoice error:', error);
+    res.status(500).json({ message: 'Error downloading invoice' });
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
