@@ -17,6 +17,7 @@ import ProductDetails from "./pages/ProductDetails";
 import ErrorPage from "./pages/ErrorPage"; 
 import Results from "./pages/Results";
 import CustomerProfile from "./pages/Customers/CustomerProfile";
+import ProductsList from "./pages/Admin/Products/ProductsList";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
@@ -76,7 +77,12 @@ const router = createBrowserRouter([
   {
     path: "customerprofile",
     element :<CustomerProfile/>
+  },
+  {
+    path: "ProductsList",
+    element: <ProductsList/>
   }
+
 ]);
 
 root.render(
