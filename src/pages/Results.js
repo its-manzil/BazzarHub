@@ -28,7 +28,7 @@ function Results() {
         console.error("Couldn't fetch categories:", err);
       }
     };
-    
+
     fetchCategories();
   }, []);
 
@@ -47,25 +47,27 @@ function Results() {
         setLoading(true);
         setError(null);
         setSuggestion(null);
-        
+
         let url = `http://localhost:8099/api/search?q=${encodeURIComponent(query)}`;
         if (category) {
           url += `&category=${encodeURIComponent(category)}`;
         }
-        
+
         const response = await fetch(url);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        
+
         if (!data.success) {
           throw new Error(data.message || "Search failed");
         }
-        
-        setResults(data.results || []);
+
+        const searchResults = data.results || [];
+
+        setResults(searchResults);
         setSuggestion(data.suggestion);
         setSelectedCategory(category || "");
       } catch (err) {
@@ -100,57 +102,56 @@ function Results() {
   }
 
   return (
-  <>
-  <Search/>
-  <Nav/>
-    <div className="results-container">
-      <div className="search-filters">
-        <h3>Categories</h3>
-        <div className="category-filters">
-          <button 
-            className={!selectedCategory ? "active" : ""}
-            onClick={() => handleCategoryChange("")}
-          >
-            All
-          </button>
-          {categories.map(category => (
+    <>
+      <Search />
+      <Nav />
+      <div className="results-container">
+        <div className="search-filters">
+          <h3>Categories</h3>
+          <div className="category-filters">
             <button
-              key={category}
-              className={selectedCategory === category ? "active" : ""}
-              onClick={() => handleCategoryChange(category)}
+              className={!selectedCategory ? "active" : ""}
+              onClick={() => handleCategoryChange("")}
             >
-              {category}
+              All
             </button>
-          ))}
+            {categories.map((category) => (
+              <button
+                key={category}
+                className={selectedCategory === category ? "active" : ""}
+                onClick={() => handleCategoryChange(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <h2 className="results-title">Search Results</h2>
+
+        {suggestion && (
+          <div className="search-suggestion">
+            Did you mean:{" "}
+            <button onClick={handleSuggestionClick}>{suggestion}</button>?
+          </div>
+        )}
+
+        {results.length === 0 ? (
+          <div className="no-results">
+            No products found. Try different keywords.
+          </div>
+        ) : (
+          <div className="results-grid">
+            {results.map((product) => (
+              <ProductCard
+                key={product.product_id}
+                product={product}
+                showPriceRange={true}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      <h2 className="results-title">Search Results</h2>
-      
-      {suggestion && (
-        <div className="search-suggestion">
-          Did you mean: 
-          <button onClick={handleSuggestionClick}>{suggestion}</button>?
-        </div>
-      )}
-
-      {results.length === 0 ? (
-        <div className="no-results">
-          No products found. Try different keywords.
-        </div>
-      ) : (
-        <div className="results-grid">
-          {results.map((product) => (
-            <ProductCard 
-              key={product.product_id} 
-              product={product} 
-              showPriceRange={true}
-
-            />
-          ))}
-        </div>
-      )}
-    </div>
     </>
   );
 }

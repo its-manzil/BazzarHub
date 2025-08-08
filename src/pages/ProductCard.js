@@ -3,18 +3,19 @@ import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
 const ProductCard = ({ product, showPriceRange = false }) => {
-  // Safely handle prices
+  // Convert and sanitize prices
   const minPrice = Number(product.min_price) || 0;
   const maxPrice = Number(product.max_price) || 0;
   const hasMultiplePrices = minPrice !== maxPrice;
-  
+
+  // Calculate discount percentage
   const discount = maxPrice > 0 && maxPrice > minPrice
     ? Math.round(((maxPrice - minPrice) / maxPrice) * 100)
     : 0;
 
   return (
-    <div className="product-card">
-      <Link to={`/product/${product.product_id}`} className="product-link">
+    <Link to={`/product/${product.product_id}`} className="product-link">
+      <div className="product-card">
         <div className="product-image-container">
           {product.image_url ? (
             <img 
@@ -34,14 +35,17 @@ const ProductCard = ({ product, showPriceRange = false }) => {
             <div className="discount-badge">-{discount}%</div>
           )}
         </div>
+
         <div className="product-info">
           <h3 className="product-title">{product.product_name}</h3>
           <p className="product-brand">{product.brand}</p>
+
           {product.variant_names && (
             <div className="product-variants">
               Options: {product.variant_names}
             </div>
           )}
+
           <div className="product-pricing">
             {hasMultiplePrices && showPriceRange ? (
               <>
@@ -68,8 +72,8 @@ const ProductCard = ({ product, showPriceRange = false }) => {
             )}
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 };
 
