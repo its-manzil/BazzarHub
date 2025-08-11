@@ -152,3 +152,136 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE INDEX idx_customers_email ON customers(email);
 CREATE INDEX idx_variant_value ON product_variants(variant_value);
 CREATE FULLTEXT INDEX ft_product_search ON products(product_name, brand, description, category);
+
+-- Update the orders table to have more detailed status options
+ALTER TABLE orders 
+MODIFY COLUMN status ENUM(
+    'Pending', 
+    'Processing', 
+    'Ready to Ship', 
+    'Shipped', 
+    'Delivered', 
+    'Cancelled', 
+    'Returned'
+) DEFAULT 'Pending';
+
+
+-- Create Order Status History Table
+CREATE TABLE IF NOT EXISTS order_status_history (
+    history_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    old_status VARCHAR(50),
+    new_status VARCHAR(50) NOT NULL,
+    changed_by VARCHAR(50) NOT NULL COMMENT 'system, admin, customer, etc.',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+);
+
+
+-- Trigger to record initial status when order is created
+DELIMITER //
+CREATE TRIGGER after_order_insert
+AFTER INSERT ON orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO order_status_history (
+        order_id, 
+        old_status, 
+        new_status, 
+        changed_by,
+        notes
+    ) VALUES (
+        NEW.order_id, 
+        NULL, 
+        NEW.status, 
+        'system',
+        'Order created with default status'
+    );
+END//
+DELIMITER ;
+
+-- Trigger to record status changes when order is updated
+DELIMITER //
+CREATE TRIGGER after_order_update
+AFTER UPDATE ON orders
+FOR EACH ROW
+BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO order_status_history (
+            order_id, 
+            old_status, 
+            new_status, 
+            changed_by,
+            notes
+        ) VALUES (
+            NEW.order_id, 
+            OLD.status, 
+            NEW.status, 
+            'system',
+            CONCAT('Status changed via order update at ', NOW())
+        );
+    END IF;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE update_order_status(
+    IN p_order_id INT,
+    IN p_new_status VARCHAR(50),
+    IN p_changed_by VARCHAR(50),
+    IN p_notes TEXT
+)
+BEGIN
+    DECLARE current_status VARCHAR(50);
+    
+    -- Get current status
+    SELECT status INTO current_status FROM orders WHERE order_id = p_order_id;
+    
+    -- Update order status
+    UPDATE orders 
+    SET status = p_new_status 
+    WHERE order_id = p_order_id;
+    
+    -- Record the change
+    INSERT INTO order_status_history (
+        order_id, 
+        old_status, 
+        new_status, 
+        changed_by,
+        notes
+    ) VALUES (
+        p_order_id, 
+        current_status, 
+        p_new_status, 
+        p_changed_by,
+        p_notes
+    );
+END//
+DELIMITER ;
+
+
+CREATE VIEW order_status_with_history AS
+SELECT 
+    o.order_id,
+    o.user_id,
+    o.status AS current_status,
+    osh.new_status AS last_status,
+    osh.changed_by AS last_changed_by,
+    osh.created_at AS last_status_change,
+    osh.notes AS last_status_notes
+FROM 
+    orders o
+LEFT JOIN 
+    (SELECT 
+        order_id, 
+        new_status, 
+        changed_by, 
+        created_at, 
+        notes,
+        ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY created_at DESC) as rn
+     FROM order_status_history) osh
+ON 
+    o.order_id = osh.order_id AND osh.rn = 1;
+
