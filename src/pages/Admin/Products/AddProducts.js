@@ -226,11 +226,48 @@ const AddProducts = () => {
                     className="fieldset-input"
                     required
                   />
-                  <div className="fieldset-focus"></div>
+                </div>
+              </div>
+              
+              <div className="variant-price-grid">
+                <div className="form-group">
+                  <label className="form-label">Marked Price *</label>
+                  <div className="price-input-container">
+                    <span className="price-symbol">Rs</span>
+                    <input
+                      type="number"
+                      name="markedPrice"
+                      value={currentVariant.markedPrice}
+                      onChange={handleVariantChange}
+                      min="0"
+                      step="0.01"
+                      className="price-input"
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
                 
-                <div className="form-fieldset">
-                  <label htmlFor="brand" className="fieldset-label">Brand</label>
+                <div className="form-group">
+  <label className="form-label">Selling Price *</label>
+  <div className="price-input-container" style={{ position: 'relative' }}>
+    {currentVariant.sellingPrice === '' && (
+      <span className="price-symbol">Rs</span>
+    )}
+    <input
+      type="number"
+      name="sellingPrice"
+      value={currentVariant.sellingPrice}
+      onChange={handleVariantChange}
+      min="0"
+      step="0.01"
+      className="price-input"
+    />
+  </div>
+</div>
+
+                
+                <div className="form-group">
+                  <label className="form-label">Stock Quantity *</label>
                   <input
                     id="brand"
                     type="text"
