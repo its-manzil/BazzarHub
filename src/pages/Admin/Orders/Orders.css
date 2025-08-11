@@ -16,28 +16,28 @@ body {
   padding: 0;
 }
 
-.products-container {
+.orders-container {
   padding: 20px;
   max-width: 1200px;
   margin: auto;
 }
 
-.products-header {
+.orders-header {
   margin-bottom: 20px;
 }
 
-.products-title {
+.orders-title {
   font-size: 2rem;
   font-weight: 600;
   margin-bottom: 6px;
 }
 
-.products-subtitle {
+.orders-subtitle {
   font-size: 1rem;
   color: #555;
 }
 
-.products-alert.error {
+.orders-alert.error {
   background-color: #ffdddd;
   color: #a10000;
   padding: 10px 15px;
@@ -46,11 +46,11 @@ body {
   border: 1px solid #a10000;
 }
 
-.products-table-wrapper {
+.orders-table-wrapper {
   overflow-x: auto;
 }
 
-.products-table {
+.orders-table {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--white);
@@ -58,53 +58,64 @@ body {
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
-.products-table th,
-.products-table td {
+.orders-table th,
+.orders-table td {
   padding: 14px 18px;
   border-bottom: 1px solid #eee;
   text-align: left;
   vertical-align: middle;
 }
 
-.products-table th {
+.orders-table th {
   background-color: var(--secondary-color);
   font-weight: 600;
 }
 
+.status {
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  color: var(--white);
+  text-transform: capitalize;
+}
+
+.status.pending {
+  background-color: #f0ad4e;
+}
+
+.status.completed {
+  background-color: #5cb85c;
+}
+
+.status.cancelled {
+  background-color: #d9534f;
+}
+
+.status.processing {
+  background-color: #5bc0de;
+}
+
 /* Buttons */
-.btn-edit,
-.btn-delete {
+.btn-view {
+  background-color: var(--primary-color);
+  color: var(--white);
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  margin-right: 8px;
   transition: background-color 0.3s ease;
 }
 
-.btn-edit {
-  background-color: var(--primary-color);
-  color: var(--white);
-}
-
-.btn-edit:hover {
+.btn-view:hover {
   background-color: #1d4fba;
-}
-
-.btn-delete {
-  background-color: #d9534f;
-  color: var(--white);
-}
-
-.btn-delete:hover {
-  background-color: #b52e2e;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .products-table th,
-  .products-table td {
+  .orders-table th,
+  .orders-table td {
     padding: 10px 8px;
   }
 }

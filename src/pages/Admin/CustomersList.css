@@ -1,9 +1,9 @@
+/* CustomersList.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 :root {
   --primary-color: #2d6cdf;
   --secondary-color: #f4f6fa;
-  --accent-color: #ff9800;
   --text-color: #333;
   --white: #fff;
 }
@@ -16,28 +16,28 @@ body {
   padding: 0;
 }
 
-.products-container {
+.customerslist-container {
   padding: 20px;
   max-width: 1200px;
   margin: auto;
 }
 
-.products-header {
+.customerslist-header {
   margin-bottom: 20px;
 }
 
-.products-title {
+.customerslist-title {
   font-size: 2rem;
   font-weight: 600;
   margin-bottom: 6px;
 }
 
-.products-subtitle {
+.customerslist-subtitle {
   font-size: 1rem;
   color: #555;
 }
 
-.products-alert.error {
+.customerslist-alert.error {
   background-color: #ffdddd;
   color: #a10000;
   padding: 10px 15px;
@@ -46,11 +46,11 @@ body {
   border: 1px solid #a10000;
 }
 
-.products-table-wrapper {
+.customerslist-table-wrapper {
   overflow-x: auto;
 }
 
-.products-table {
+.customerslist-table {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--white);
@@ -58,53 +58,22 @@ body {
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
-.products-table th,
-.products-table td {
+.customerslist-table th,
+.customerslist-table td {
   padding: 14px 18px;
   border-bottom: 1px solid #eee;
   text-align: left;
   vertical-align: middle;
 }
 
-.products-table th {
+.customerslist-table th {
   background-color: var(--secondary-color);
   font-weight: 600;
 }
 
-/* Buttons */
-.btn-edit,
-.btn-delete {
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  margin-right: 8px;
-  transition: background-color 0.3s ease;
-}
-
-.btn-edit {
-  background-color: var(--primary-color);
-  color: var(--white);
-}
-
-.btn-edit:hover {
-  background-color: #1d4fba;
-}
-
-.btn-delete {
-  background-color: #d9534f;
-  color: var(--white);
-}
-
-.btn-delete:hover {
-  background-color: #b52e2e;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .products-table th,
-  .products-table td {
+  .customerslist-table th,
+  .customerslist-table td {
     padding: 10px 8px;
   }
 }

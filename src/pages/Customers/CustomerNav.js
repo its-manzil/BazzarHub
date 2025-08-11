@@ -112,7 +112,7 @@ const CustomerNav = () => {
         
         <button 
           className="customer-nav-btn"
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate('/CustomerOrders')}
         >
           <i className="fas fa-history"></i> Order History
         </button>

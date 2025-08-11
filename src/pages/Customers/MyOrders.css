@@ -1,0 +1,148 @@
+.my-orders-page {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  background: #f7f9fc;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Assuming Nav and CustomerNav have fixed widths,
+   we'll make the main content flex-grow */
+.my-orders-page > .my-orders-container {
+  flex-grow: 1;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+/* Center the heading */
+.my-orders-container h1 {
+  font-size: 2.4rem;
+  margin-bottom: 1.5rem;
+  color: #222;
+  text-align: center;
+  letter-spacing: 1.2px;
+}
+
+/* Responsive wrapper for table to enable horizontal scroll */
+.my-orders-container .table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  box-shadow: inset 0 0 5px #ccc;
+  padding-bottom: 8px;
+}
+
+/* Table styles */
+.my-orders-container table.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* to help horizontal scroll on small screens */
+  font-size: 1rem;
+  color: #333;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.orders-table th {
+  background-color: #1e88e5;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.orders-table tbody tr:hover {
+  background-color: #e3f2fd;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Clean Status badges */
+.status {
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 15px;
+  text-transform: capitalize;
+  display: inline-block;
+  font-size: 0.9rem;
+  min-width: 80px;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+}
+
+/* Delivered: soft green with crisp white text */
+.status.delivered {
+  background-color: #34c759; /* softer green */
+  color: #fff;
+}
+
+/* Processing: warm amber with dark text */
+.status.processing {
+  background-color: #f9a825; /* amber */
+  color: #3e2723; /* dark brown */
+}
+
+/* Cancelled: muted red with white text */
+.status.cancelled {
+  background-color: #e53935; /* red */
+  color: #fff;
+}
+
+/* Subtle hover effect on statuses */
+.status:hover {
+  filter: brightness(1.1);
+  cursor: default;
+}
+
+/* Responsive typography and padding for smaller devices */
+@media (max-width: 768px) {
+  .my-orders-container {
+    padding: 1rem 1.2rem;
+    margin: 1rem 0.5rem;
+  }
+
+  .my-orders-container h1 {
+    font-size: 1.8rem;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .my-orders-page {
+    flex-direction: column;
+  }
+
+  /* Make Nav and CustomerNav collapse or stack if needed */
+  /* If they are fixed width, you may want to hide or toggle */
+
+  .my-orders-container {
+    max-width: 100%;
+    margin: 1rem 0.5rem;
+    padding: 1rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .orders-table {
+    min-width: 500px; /* keep scroll but smaller */
+  }
+}

@@ -182,7 +182,7 @@ const AddProducts = () => {
         <div className="portal-container">
           <header className="portal-header">
             <h1 className="portal-title">
-              <span className="title-gradient">Create New Product</span>
+              <span className="title-gradient">Add New Product</span>
               <span className="title-underline"></span>
             </h1>
             <p className="portal-subtitle">Fill out the form below to add a new product to your inventory</p>

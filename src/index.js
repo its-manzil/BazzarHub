@@ -13,11 +13,18 @@ import UserSetting from "./pages/Customers/UserSetting";
 import Store from "./pages/Store";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AddProducts from "./pages/Admin/Products/AddProducts";
+
 import ProductDetails from "./pages/ProductDetails";
 import ErrorPage from "./pages/ErrorPage"; 
 import Results from "./pages/Results";
 import CustomerProfile from "./pages/Customers/CustomerProfile";
+
+import Orders from "./pages/Admin/Orders/Orders";
 import ProductsList from "./pages/Admin/Products/ProductsList";
+import CustomersList from "./pages/Admin/CustomersList";
+import MyOrders from "./pages/Customers/MyOrders";
+import CustomerDashboard from "./pages/Customers/CustomerDashboard";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const router = createBrowserRouter([
@@ -78,10 +85,33 @@ const router = createBrowserRouter([
     path: "customerprofile",
     element :<CustomerProfile/>
   },
+  
+    
   {
-    path: "ProductsList",
-    element: <ProductsList/>
+    path: "AdminDashboard",
+    element: <AdminDashboard/>
+  },
+  {
+    path: "Orders",
+    element: <Orders/>
+  },
+  {
+    path:"ProductsList",
+    element:<ProductsList/>
+  },
+  {
+    path:"CustomersList",
+    element:<CustomersList/>
+  },
+  {
+    path:"MyOrders",
+    element:<MyOrders/>
+  },
+  {
+    path:"CustomerDashboard",
+    element:<CustomerDashboard/>
   }
+  
 
 ]);
 
