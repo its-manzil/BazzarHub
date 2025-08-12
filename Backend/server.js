@@ -52,7 +52,7 @@ const upload = multer({
 const db = mysql.createPool({
   host: "localhost",
   user: "root",
-  password: "",
+  password: "manjil@123",
   database: "BazarHub",
   waitForConnections: true,
   connectionLimit: 10,
@@ -1046,8 +1046,6 @@ app.put('/api/cart/:itemId', verifyToken, async (req, res) => {
   }
 });
 
-// Add to your server.js after the cart routes
-
 // Order Routes
 app.post('/api/orders', verifyToken, async (req, res) => {
   try {
@@ -1226,6 +1224,313 @@ app.get('/api/orders/:orderId/invoice', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Error downloading invoice' });
   }
 });
+
+
+// Get user's orders
+// Get user's orders
+app.get('/api/orders/my-orders', verifyToken, async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const [orders] = await db.query(
+            `SELECT 
+                o.order_id,
+                o.total_amount,
+                o.status,
+                o.created_at,
+                o.shipping_address,
+                oi.order_item_id,
+                oi.product_id,
+                oi.product_name,
+                oi.variant_name,
+                oi.variant_value,
+                oi.quantity,
+                oi.unit_price,
+                (SELECT image_url FROM product_images WHERE product_id = oi.product_id LIMIT 1) as image_url
+            FROM orders o
+            JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.user_id = ?
+            ORDER BY o.created_at DESC`,
+            [userId]
+        );
+
+        const ordersMap = {};
+        orders.forEach(row => {
+            if (!ordersMap[row.order_id]) {
+                let shippingAddress = row.shipping_address;
+                if (typeof shippingAddress === 'string') {
+                    try {
+                        shippingAddress = JSON.parse(shippingAddress);
+                    } catch {
+                        shippingAddress = {};
+                    }
+                }
+
+                ordersMap[row.order_id] = {
+                    order_id: row.order_id,
+                    total_amount: Number(row.total_amount) || 0,
+                    status: row.status,
+                    created_at: row.created_at,
+                    shipping_address: shippingAddress,
+                    items: []
+                };
+            }
+            ordersMap[row.order_id].items.push({
+                order_item_id: row.order_item_id,
+                product_id: row.product_id,
+                product_name: row.product_name,
+                variant_name: row.variant_name,
+                variant_value: row.variant_value,
+                quantity: row.quantity,
+                unit_price: Number(row.unit_price) || 0,
+                image_url: row.image_url
+            });
+        });
+
+        res.json({ orders: Object.values(ordersMap) });
+    } catch (error) {
+        console.error('Get orders error:', error);
+        res.status(500).json({ message: 'Error fetching orders' });
+    }
+});
+
+// Get order details
+app.get('/api/orders/:orderId', verifyToken, async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const userId = req.userId;
+
+        // Verify order belongs to user
+        const [orderCheck] = await db.query(
+            'SELECT 1 FROM orders WHERE order_id = ? AND user_id = ?',
+            [orderId, userId]
+        );
+
+        if (orderCheck.length === 0) {
+            return res.status(404).json({ message: 'Order not found or not authorized' });
+        }
+
+        // Get order details
+        const [order] = await db.query(
+            `SELECT 
+                o.order_id,
+                o.total_amount,
+                o.status,
+                o.created_at,
+                o.shipping_address,
+                o.payment_method
+            FROM orders o
+            WHERE o.order_id = ?`,
+            [orderId]
+        );
+
+        if (order.length === 0) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Get order items
+        const [items] = await db.query(
+            `SELECT 
+                oi.order_item_id,
+                oi.product_id,
+                oi.product_name,
+                oi.variant_name,
+                oi.variant_value,
+                oi.quantity,
+                oi.unit_price,
+                (SELECT image_url FROM product_images WHERE product_id = oi.product_id LIMIT 1) as image_url,
+                (SELECT rating FROM product_ratings WHERE product_id = oi.product_id AND user_id = ?) as rating,
+                (SELECT text FROM product_comments WHERE product_id = oi.product_id AND user_id = ?) as comment
+            FROM order_items oi
+            WHERE oi.order_id = ?`,
+            [userId, userId, orderId]
+        );
+
+        // Add reviews to items if they exist
+        const itemsWithReviews = items.map(item => {
+            if (item.rating || item.comment) {
+                return {
+                    ...item,
+                    review: {
+                        rating: item.rating,
+                        comment: item.comment
+                    }
+                };
+            }
+            return item;
+        });
+
+        res.json({
+            order: {
+                ...order[0],
+                shipping_address: JSON.parse(order[0].shipping_address),
+                items: itemsWithReviews
+            }
+        });
+    } catch (error) {
+        console.error('Get order details error:', error);
+        res.status(500).json({ message: 'Error fetching order details' });
+    }
+});
+
+// Get order tracking history
+app.get('/api/orders/:orderId/tracking', verifyToken, async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const userId = req.userId;
+
+        // Verify order belongs to user
+        const [orderCheck] = await db.query(
+            'SELECT 1 FROM orders WHERE order_id = ? AND user_id = ?',
+            [orderId, userId]
+        );
+
+        if (orderCheck.length === 0) {
+            return res.status(404).json({ message: 'Order not found or not authorized' });
+        }
+
+        // Get tracking history
+        const [history] = await db.query(
+            `SELECT 
+                old_status,
+                new_status,
+                changed_by,
+                notes,
+                created_at
+            FROM order_status_history
+            WHERE order_id = ?
+            ORDER BY created_at DESC`,
+            [orderId]
+        );
+
+        res.json({ history });
+    } catch (error) {
+        console.error('Get tracking history error:', error);
+        res.status(500).json({ message: 'Error fetching tracking history' });
+    }
+});
+
+// Cancel order
+// Cancel specific order item
+app.put('/api/orders/:orderId/items/:itemId/cancel', verifyToken, async (req, res) => {
+    try {
+        const { orderId, itemId } = req.params;
+        const userId = req.userId;
+
+        // Verify order belongs to user
+        const [order] = await db.query(
+            'SELECT status FROM orders WHERE order_id = ? AND user_id = ?',
+            [orderId, userId]
+        );
+
+        if (order.length === 0) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Order not found or not authorized' 
+            });
+        }
+
+        // Get the item to cancel
+        const [item] = await db.query(
+            'SELECT * FROM order_items WHERE order_item_id = ? AND order_id = ?',
+            [itemId, orderId]
+        );
+
+        if (item.length === 0) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Order item not found' 
+            });
+        }
+
+        // Check if item can be cancelled
+        if (item[0].status !== 'Pending' && item[0].status !== 'Processing') {
+            return res.status(400).json({ 
+                success: false,
+                message: `Item cannot be cancelled in its current state (${item[0].status})`
+            });
+        }
+
+        // Begin transaction
+        await db.query('START TRANSACTION');
+
+        try {
+            // Update item status
+            await db.query(
+                'UPDATE order_items SET status = ? WHERE order_item_id = ?',
+                ['Cancelled', itemId]
+            );
+
+            // Record status change
+            await db.query(
+                `INSERT INTO order_status_history 
+                (order_id, old_status, new_status, changed_by, notes, item_id)
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    orderId,
+                    item[0].status,
+                    'Cancelled',
+                    'customer',
+                    `Item ${itemId} cancelled by customer`,
+                    itemId
+                ]
+            );
+
+            // Check if all items are cancelled to update order status
+            const [remainingItems] = await db.query(
+                `SELECT COUNT(*) as count 
+                FROM order_items 
+                WHERE order_id = ? 
+                AND status NOT IN ('Cancelled', 'Returned')`,
+                [orderId]
+            );
+
+            if (remainingItems[0].count === 0) {
+                await db.query(
+                    'UPDATE orders SET status = ? WHERE order_id = ?',
+                    ['Cancelled', orderId]
+                );
+                
+                // Record order status change
+                await db.query(
+                    `INSERT INTO order_status_history 
+                    (order_id, old_status, new_status, changed_by, notes, item_id)
+                    VALUES (?, ?, ?, ?, ?, NULL)`,
+                    [
+                        orderId,
+                        order[0].status,
+                        'Cancelled',
+                        'system',
+                        'All items cancelled - order automatically cancelled',
+                    ]
+                );
+            }
+
+            await db.query('COMMIT');
+            res.json({ 
+                success: true,
+                message: 'Item cancelled successfully',
+                data: {
+                    order_id: orderId,
+                    item_id: itemId,
+                    new_status: 'Cancelled'
+                }
+            });
+        } catch (err) {
+            await db.query('ROLLBACK');
+            console.error('Database error:', err);
+            throw new Error('Failed to update order status in database');
+        }
+    } catch (error) {
+        console.error('Cancel item error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message || 'Error cancelling item',
+            error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

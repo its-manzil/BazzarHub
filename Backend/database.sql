@@ -285,3 +285,122 @@ LEFT JOIN
 ON 
     o.order_id = osh.order_id AND osh.rn = 1;
 
+
+
+ALTER TABLE order_items 
+ADD COLUMN status ENUM(
+    'Pending', 
+    'Processing', 
+    'Shipped', 
+    'Delivered', 
+    'Cancelled', 
+    'Returned'
+) DEFAULT 'Pending';
+
+-- Update existing records to have status
+UPDATE order_items SET status = 'Pending' WHERE status IS NULL;
+
+-- Add item_id column to order_status_history table
+ALTER TABLE order_status_history 
+ADD COLUMN item_id INT NULL,
+ADD FOREIGN KEY (item_id) REFERENCES order_items(order_item_id);
+
+-- Update the triggers to include item_id
+DROP TRIGGER IF EXISTS after_order_insert;
+DELIMITER //
+CREATE TRIGGER after_order_insert
+AFTER INSERT ON orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO order_status_history (
+        order_id, 
+        old_status, 
+        new_status, 
+        changed_by,
+        notes,
+        item_id
+    ) VALUES (
+        NEW.order_id, 
+        NULL, 
+        NEW.status, 
+        'system',
+        'Order created with default status',
+        NULL
+    );
+END//
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS after_order_update;
+DELIMITER //
+CREATE TRIGGER after_order_update
+AFTER UPDATE ON orders
+FOR EACH ROW
+BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO order_status_history (
+            order_id, 
+            old_status, 
+            new_status, 
+            changed_by,
+            notes,
+            item_id
+        ) VALUES (
+            NEW.order_id, 
+            OLD.status, 
+            NEW.status, 
+            'system',
+            CONCAT('Status changed via order update at ', NOW()),
+            NULL
+        );
+    END IF;
+END//
+DELIMITER ;
+
+-- Update the stored procedure
+DROP PROCEDURE IF EXISTS update_order_status;
+DELIMITER //
+CREATE PROCEDURE update_order_status(
+    IN p_order_id INT,
+    IN p_new_status VARCHAR(50),
+    IN p_changed_by VARCHAR(50),
+    IN p_notes TEXT,
+    IN p_item_id INT
+)
+BEGIN
+    DECLARE current_status VARCHAR(50);
+    
+    -- Get current status
+    IF p_item_id IS NULL THEN
+        SELECT status INTO current_status FROM orders WHERE order_id = p_order_id;
+        
+        -- Update order status
+        UPDATE orders 
+        SET status = p_new_status 
+        WHERE order_id = p_order_id;
+    ELSE
+        SELECT status INTO current_status FROM order_items WHERE order_item_id = p_item_id;
+        
+        -- Update item status
+        UPDATE order_items 
+        SET status = p_new_status 
+        WHERE order_item_id = p_item_id;
+    END IF;
+    
+    -- Record the change
+    INSERT INTO order_status_history (
+        order_id, 
+        old_status, 
+        new_status, 
+        changed_by,
+        notes,
+        item_id
+    ) VALUES (
+        p_order_id, 
+        current_status, 
+        p_new_status, 
+        p_changed_by,
+        p_notes,
+        p_item_id
+    );
+END//
+DELIMITER ;

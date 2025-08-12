@@ -93,7 +93,7 @@ const router = createBrowserRouter([
   },
   {
     path: "Orders",
-    element: <Orders/>
+    element: <MyOrders/>
   },
   {
     path:"ProductsList",
@@ -104,7 +104,7 @@ const router = createBrowserRouter([
     element:<CustomersList/>
   },
   {
-    path:"MyOrders",
+    path:"CustomerOrders",
     element:<MyOrders/>
   },
   {
