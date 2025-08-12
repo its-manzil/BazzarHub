@@ -21,7 +21,7 @@ import ProductsList from "./pages/Admin/Products/ProductsList";
 import CustomersList from "./pages/Admin/CustomersList";
 import MyOrders from "./pages/Customers/MyOrders";
 import CustomerDashboard from "./pages/Customers/CustomerDashboard";
-import Orders from "./pages/Admin/Orders/Orders"
+import AdminOrders from "./pages/Admin/Orders/AdminOrders";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -111,7 +111,7 @@ const router = createBrowserRouter([
   },
   {
     path: "AdminOrders",
-    element: <Orders/>
+    element: <AdminOrders/>
   }
   
 

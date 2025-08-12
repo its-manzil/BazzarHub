@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./search.css";
-import { FiSearch } from "react-icons/fi";
+
 
 function Search() {
   const [query, setQuery] = useState("");
@@ -18,7 +18,6 @@ function Search() {
     <div className="search-container">
       <form onSubmit={handleSubmit} className="search-form">
         <div className="search-input-group">
-          <FiSearch className="search-icon" />
           <input
             type="search"
             className="search-input"

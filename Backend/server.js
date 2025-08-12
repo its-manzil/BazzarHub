@@ -1627,6 +1627,81 @@ app.post('/api/allProducts/:productId/variants', async (req, res) => {
   }
 });
 
+// Get all orders with details
+// Get all orders with details
+app.get('/api/allOrders', async (req, res) => {
+  try {
+    // Get all orders with user details
+    const [orders] = await db.query(`
+      SELECT o.*, 
+             c.full_name, c.email, c.phone,
+             p.status as payment_status
+      FROM orders o
+      LEFT JOIN customers c ON o.user_id = c.id
+      LEFT JOIN payments p ON o.order_id = p.order_id
+      ORDER BY o.created_at DESC
+    `);
+
+    // Get order items for each order
+    for (let order of orders) {
+      const [items] = await db.query(`
+        SELECT * FROM order_items 
+        WHERE order_id = ?
+      `, [order.order_id]);
+      order.items = items;
+      
+      // Add user details object
+      order.user_details = {
+        full_name: order.full_name,
+        email: order.email,
+        phone: order.phone
+      };
+
+      // Ensure total_amount is a number
+      order.total_amount = Number(order.total_amount);
+    }
+
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Error fetching orders' });
+  }
+});
+
+// Update order status
+app.put('/api/allOrders/:orderId/status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    
+    // Validate status
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+    
+    // Update order status
+    await db.query(
+      'UPDATE orders SET status = ? WHERE order_id = ?',
+      [status, orderId]
+    );
+    
+    // Record in history
+    await db.query(
+      `INSERT INTO order_status_history 
+      (order_id, old_status, new_status, changed_by, notes)
+      SELECT order_id, status, ?, 'admin', 'Status changed via admin panel'
+      FROM orders WHERE order_id = ?`,
+      [status, orderId]
+    );
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Error updating order status' });
+  }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
