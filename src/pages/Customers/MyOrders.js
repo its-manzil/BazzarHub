@@ -19,23 +19,29 @@ const MyOrder = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [dateFilter, setDateFilter] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [notification, setNotification] = useState({ show: false, message: '', isError: false });
+    const [activeTab, setActiveTab] = useState('active'); // 'active', 'cancelled', or 'delivered'
     const navigate = useNavigate();
     const ordersPerPage = 7;
 
+    const handleDateFilterChange = (e) => {
+        setDateFilter(e.target.value);
+        setCurrentPage(1);
+        setIsFilterOpen(false);
+    };
+
+    const clearDateFilter = () => {
+        setDateFilter('');
+        setCurrentPage(1);
+    };
+
     // Helper function to process each order item
     const processItem = (item) => ({
-        order_item_id: item.order_item_id || 'N/A',
-        product_id: item.product_id || 'N/A',
-        product_name: item.product_name || 'Unknown Product',
-        variant_name: item.variant_name || '',
-        variant_value: item.variant_value || '',
-        quantity: Number(item.quantity || 1),
-        unit_price: Number(item.unit_price || 0),
-        image_url: item.image_url || 'product-placeholder.jpg',
-        status: item.status || 'Pending'
+        ...item,
+        status: item.status || 'Pending' // Ensure status is always set
     });
 
     // Format price with Rs. symbol
@@ -50,16 +56,6 @@ const MyOrder = () => {
         setTimeout(() => {
             setNotification(prev => ({ ...prev, show: false }));
         }, 3000);
-    };
-
-    // Format date for display
-    const formatDate = (dateString) => {
-        try {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString(undefined, options);
-        } catch {
-            return 'Unknown date';
-        }
     };
 
     // Format date with time
@@ -133,44 +129,8 @@ const MyOrder = () => {
                 throw new Error(errorData.message || 'Failed to cancel item');
             }
 
-            // Update local state
-            setOrders(prevOrders => 
-                prevOrders.map(order => {
-                    if (order.order_id === orderId) {
-                        // Find and move item to cancelled
-                        const itemIndex = order.items.findIndex(item => item.order_item_id === itemId);
-                        if (itemIndex === -1) return order;
-
-                        const itemToCancel = order.items[itemIndex];
-                        const updatedItems = [...order.items];
-                        updatedItems.splice(itemIndex, 1);
-                        
-                        const updatedCancelledItems = [
-                            ...(order.cancelledItems || []),
-                            { ...itemToCancel, status: 'Cancelled' }
-                        ];
-
-                        // Recalculate active total
-                        const newActiveTotal = updatedItems.reduce(
-                            (sum, item) => sum + (item.unit_price * item.quantity), 
-                            0
-                        );
-
-                        // Check if all items cancelled
-                        const allCancelled = updatedItems.length === 0;
-
-                        return {
-                            ...order,
-                            items: updatedItems,
-                            cancelledItems: updatedCancelledItems,
-                            activeTotal: Number(newActiveTotal.toFixed(2)),
-                            status: allCancelled ? 'Cancelled' : order.status
-                        };
-                    }
-                    return order;
-                })
-            );
-
+            // Refetch orders to get updated status
+            fetchOrders();
             showNotification('Item cancelled successfully');
         } catch (err) {
             console.error('Cancellation error:', err);
@@ -178,98 +138,77 @@ const MyOrder = () => {
         }
     };
 
-    // Handle date filter
-    const handleDateFilterChange = (e) => {
-        setDateFilter(e.target.value);
-        setCurrentPage(1);
-        setIsFilterOpen(false);
-    };
-
-    // Clear date filter
-    const clearDateFilter = () => {
-        setDateFilter('');
-        setCurrentPage(1);
-    };
-
-    // Pagination handlers
-    const handleNextPage = () => {
-        setCurrentPage(prev => prev + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handlePrevPage = () => {
-        setCurrentPage(prev => Math.max(prev - 1, 1));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
     // Fetch orders
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                
-                const token = localStorage.getItem('authToken');
-                if (!token) {
-                    navigate('/login');
-                    return;
-                }
-
-                let url = `http://localhost:8099/api/orders/my-orders?page=${currentPage}&limit=${ordersPerPage}&sort=desc`;
-                if (dateFilter) {
-                    url += `&date=${dateFilter}`;
-                }
-
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || 'Failed to fetch orders');
-                }
-
-                const data = await response.json();
-                
-                // Process orders
-                const processedOrders = (data.orders || []).map(order => {
-                    const items = Array.isArray(order.items) ? order.items : [];
-                    const activeItems = items.filter(item => item.status !== 'Cancelled');
-                    const cancelledItems = items.filter(item => item.status === 'Cancelled');
-
-                    const originalTotal = Number(order.total_amount || 0);
-                    const activeTotal = activeItems.reduce(
-                        (sum, item) => sum + (Number(item.unit_price || 0) * Number(item.quantity || 1)), 
-                        0
-                    );
-
-                    return {
-                        order_id: order.order_id || 'N/A',
-                        created_at: order.created_at || new Date().toISOString(),
-                        status: order.status || 'Pending',
-                        shipping_address: order.shipping_address || {},
-                        payment_method: order.payment_method || 'Unknown',
-                        items: activeItems.map(processItem),
-                        cancelledItems: cancelledItems.map(processItem),
-                        originalTotal,
-                        activeTotal: Number(activeTotal.toFixed(2))
-                    };
-                });
-
-                setOrders(processedOrders);
-            } catch (err) {
-                console.error('Fetch orders error:', err);
-                setError(err.message || 'Failed to load orders');
-                showNotification(err.message || 'Failed to load orders', true);
-            } finally {
-                setLoading(false);
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                navigate('/login');
+                return;
             }
-        };
 
+            let url = `http://localhost:8099/api/orders/my-orders?page=${currentPage}&limit=${ordersPerPage}&sort=desc`;
+            if (dateFilter) {
+                url += `&date=${dateFilter}`;
+            }
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch orders');
+            }
+
+            const data = await response.json();
+            setOrders(data.orders || []);
+            setTotalPages(Math.ceil((data.total || 0) / data.limit));
+        } catch (err) {
+            console.error('Fetch orders error:', err);
+            setError(err.message || 'Failed to load orders');
+            showNotification(err.message || 'Failed to load orders', true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchOrders();
     }, [navigate, currentPage, dateFilter]);
+
+    // Filter orders based on active tab
+    const getFilteredOrders = () => {
+        if (!Array.isArray(orders)) return [];
+
+        switch (activeTab) {
+            case 'active':
+                return orders.filter(order => 
+                    order.status !== 'Cancelled' && 
+                    order.status !== 'Delivered' &&
+                    (order.items?.length > 0 || order.cancelledItems?.length > 0)
+                );
+            case 'cancelled':
+                return orders.filter(order => 
+                    order.status === 'Cancelled' || 
+                    order.cancelledItems?.length > 0
+                );
+            case 'delivered':
+                return orders.filter(order => 
+                    order.status === 'Delivered' || 
+                    order.items?.some(item => item.status === 'Delivered')
+                );
+            default:
+                return [];
+        }
+    };
+
+    const filteredOrders = getFilteredOrders();
 
     if (loading) {
         return (
@@ -294,37 +233,6 @@ const MyOrder = () => {
                         Try Again
                     </button>
                 </div>
-            </div>
-        );
-    }
-
-    if (orders.length === 0) {
-        return (
-            <div className="no-orders">
-                <img 
-                    src="/empty-orders.svg" 
-                    alt="No orders" 
-                    className="empty-illustration" 
-                    onError={(e) => {
-                        e.target.src = '/default-empty.svg';
-                    }}
-                />
-                <h2>No Orders Found</h2>
-                <p>{dateFilter ? 'No orders match your filter' : 'You haven\'t placed any orders yet'}</p>
-                {dateFilter && (
-                    <button 
-                        className="clear-filter-btn"
-                        onClick={clearDateFilter}
-                    >
-                        Clear Filter
-                    </button>
-                )}
-                <button 
-                    className="shop-now-btn" 
-                    onClick={() => navigate('/')}
-                >
-                    Start Shopping
-                </button>
             </div>
         );
     }
@@ -373,192 +281,196 @@ const MyOrder = () => {
                         )}
                     </div>
                     <div className="pagination-info">
-                        Page {currentPage} • Showing {orders.length} orders
+                        Page {currentPage} of {totalPages}
                     </div>
                 </div>
             </div>
 
-            <div className="orders-section">
-                <h2 className="section-title">Active Orders</h2>
-                <div className="orders-grid">
-                    {orders.filter(order => order.status !== 'Cancelled').map(order => (
-                        <div key={order.order_id} className="order-card">
-                            <div className="order-header">
-                                <div className="order-meta">
-                                    <span className="order-id">Order #{order.order_id}</span>
-                                    <span className="order-date">{formatDateTime(order.created_at)}</span>
-                                    <span className={`order-status ${getStatusClass(order.status)}`}>
-                                        {getStatusIcon(order.status)}
-                                        {order.status}
-                                    </span>
-                                </div>
-                                <div className="order-total">
-                                    Total: <span>{formatPrice(order.activeTotal)}</span>
-                                    {order.activeTotal !== order.originalTotal && (
-                                        <span className="original-price">
-                                            <del>{formatPrice(order.originalTotal)}</del>
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="order-items">
-                                {order.items.map(item => (
-                                    <div key={item.order_item_id} className="order-item">
-                                        <div className="item-image-container">
-                                            <img 
-                                                src={`http://localhost:8099/uploads/${item.image_url}`} 
-                                                alt={item.product_name} 
-                                                className="item-image" 
-                                                onError={(e) => {
-                                                    e.target.src = '/product-placeholder.jpg';
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="item-details">
-                                            <h3 className="item-name">{item.product_name}</h3>
-                                            <div className="item-specs">
-                                                {item.variant_name && item.variant_value && (
-                                                    <span className="item-variant">
-                                                        {item.variant_name}: {item.variant_value}
-                                                    </span>
-                                                )}
-                                                <span className="item-qty">Qty: {item.quantity}</span>
-                                                <span className="item-price">{formatPrice(item.unit_price)}</span>
-                                            </div>
-                                            <div className="item-footer">
-                                                <div className={`status-badge ${getStatusClass(item.status)}`}>
-                                                    {getStatusIcon(item.status)}
-                                                    <span>{item.status}</span>
-                                                </div>
-                                                {(item.status === 'Pending' || item.status === 'Processing') && (
-                                                    <button 
-                                                        className="cancel-item-btn"
-                                                        onClick={() => handleCancelItem(order.order_id, item.order_item_id)}
-                                                    >
-                                                        Cancel Item
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {order.cancelledItems && order.cancelledItems.length > 0 && (
-                                <div className="cancelled-items-section">
-                                    <h3 className="cancelled-title">
-                                        <FiX className="cancelled-icon" />
-                                        Cancelled Items ({order.cancelledItems.length})
-                                    </h3>
-                                    <div className="cancelled-items">
-                                        {order.cancelledItems.map(item => (
-                                            <div key={item.order_item_id} className="cancelled-item">
-                                                <div className="item-image-container">
-                                                    <img 
-                                                        src={`http://localhost:8099/uploads/${item.image_url}`} 
-                                                        alt={item.product_name} 
-                                                        className="item-image" 
-                                                        onError={(e) => {
-                                                            e.target.src = '/product-placeholder.jpg';
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="item-details">
-                                                    <h4 className="item-name">{item.product_name}</h4>
-                                                    <div className="item-specs">
-                                                        {item.variant_name && item.variant_value && (
-                                                            <span className="item-variant">
-                                                                {item.variant_name}: {item.variant_value}
-                                                            </span>
-                                                        )}
-                                                        <span className="item-qty">Qty: {item.quantity}</span>
-                                                        <span className="item-price">{formatPrice(item.unit_price)}</span>
-                                                    </div>
-                                                    <div className="item-footer">
-                                                        <div className="status-badge cancelled">
-                                                            <FiX className="status-icon" />
-                                                            <span>Cancelled</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
+            {/* Tabs */}
+            <div className="orders-tabs">
+                <button
+                    className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('active')}
+                >
+                    Active Orders
+                </button>
+                <button
+                    className={`tab-btn ${activeTab === 'cancelled' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('cancelled')}
+                >
+                    Cancelled Orders
+                </button>
+                <button
+                    className={`tab-btn ${activeTab === 'delivered' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('delivered')}
+                >
+                    Delivered Orders
+                </button>
             </div>
 
-            {orders.filter(order => order.status === 'Cancelled').length > 0 && (
-                <div className="orders-section cancelled-orders">
-                    <h2 className="section-title">Cancelled Orders</h2>
+            {/* Orders List */}
+            {filteredOrders.length > 0 ? (
+                <div className="orders-section">
                     <div className="orders-grid">
-                        {orders.filter(order => order.status === 'Cancelled').map(order => (
-                            <div key={order.order_id} className="order-card cancelled">
+                        {filteredOrders.map(order => (
+                            <div 
+                                key={order.order_id} 
+                                className={`order-card ${order.status === 'Cancelled' ? 'cancelled' : ''} ${order.status === 'Delivered' ? 'delivered' : ''}`}
+                            >
                                 <div className="order-header">
                                     <div className="order-meta">
                                         <span className="order-id">Order #{order.order_id}</span>
                                         <span className="order-date">{formatDateTime(order.created_at)}</span>
-                                        <span className="order-status cancelled">
-                                            <FiX className="status-icon" />
-                                            Cancelled
+                                        <span className={`order-status ${getStatusClass(order.status)}`}>
+                                            {getStatusIcon(order.status)}
+                                            {order.status}
                                         </span>
                                     </div>
                                     <div className="order-total">
-                                        Original Total: <span>{formatPrice(order.originalTotal)}</span>
+                                        Total: <span>{formatPrice(order.activeTotal || order.originalTotal)}</span>
+                                        {order.activeTotal !== order.originalTotal && activeTab === 'active' && (
+                                            <span className="original-price">
+                                                <del>{formatPrice(order.originalTotal)}</del>
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="cancelled-items">
-                                    {order.cancelledItems.map(item => (
-                                        <div key={item.order_item_id} className="cancelled-item">
-                                            <div className="item-image-container">
-                                                <img 
-                                                    src={`http://localhost:8099/uploads/${item.image_url}`} 
-                                                    alt={item.product_name} 
-                                                    className="item-image" 
-                                                    onError={(e) => {
-                                                        e.target.src = '/product-placeholder.jpg';
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="item-details">
-                                                <h4 className="item-name">{item.product_name}</h4>
-                                                <div className="item-specs">
-                                                    {item.variant_name && item.variant_value && (
-                                                        <span className="item-variant">
-                                                            {item.variant_name}: {item.variant_value}
-                                                        </span>
-                                                    )}
-                                                    <span className="item-qty">Qty: {item.quantity}</span>
-                                                    <span className="item-price">{formatPrice(item.unit_price)}</span>
+                                {/* Active Items */}
+                                {(activeTab === 'active' || activeTab === 'delivered') && order.items?.length > 0 && (
+                                    <div className="order-items">
+                                        {order.items
+                                            .filter(item => activeTab === 'active' || item.status === 'Delivered')
+                                            .map(item => (
+                                                <div key={item.order_item_id} className="order-item">
+                                                    <div className="item-image-container">
+                                                        <img 
+                                                            src={`http://localhost:8099/uploads/${item.image_url}`} 
+                                                            alt={item.product_name} 
+                                                            className="item-image" 
+                                                            onError={(e) => {
+                                                                e.target.src = '/product-placeholder.jpg';
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="item-details">
+                                                        <h3 className="item-name">{item.product_name}</h3>
+                                                        <div className="item-specs">
+                                                            {item.variant_name && item.variant_value && (
+                                                                <span className="item-variant">
+                                                                    {item.variant_name}: {item.variant_value}
+                                                                </span>
+                                                            )}
+                                                            <span className="item-qty">Qty: {item.quantity}</span>
+                                                            <span className="item-price">{formatPrice(item.unit_price)}</span>
+                                                        </div>
+                                                        <div className="item-footer">
+                                                            <div className={`status-badge ${getStatusClass(item.status)}`}>
+                                                                {getStatusIcon(item.status)}
+                                                                <span>{item.status}</span>
+                                                            </div>
+                                                            {item.status === 'Pending' && activeTab === 'active' && (
+                                                                <button 
+                                                                    className="cancel-item-btn"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleCancelItem(order.order_id, item.order_item_id);
+                                                                    }}
+                                                                >
+                                                                    Cancel Item
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            ))}
+                                    </div>
+                                )}
+
+                                {/* Cancelled Items */}
+                                {order.cancelledItems?.length > 0 && (activeTab === 'cancelled' || activeTab === 'active') && (
+                                    <div className="cancelled-items-section">
+                                        <h3 className="cancelled-title">
+                                            <FiX className="cancelled-icon" />
+                                            Cancelled Items ({order.cancelledItems.length})
+                                        </h3>
+                                        <div className="cancelled-items">
+                                            {order.cancelledItems.map(item => (
+                                                <div key={item.order_item_id} className="cancelled-item">
+                                                    <div className="item-image-container">
+                                                        <img 
+                                                            src={`http://localhost:8099/uploads/${item.image_url}`} 
+                                                            alt={item.product_name} 
+                                                            className="item-image" 
+                                                            onError={(e) => {
+                                                                e.target.src = '/product-placeholder.jpg';
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="item-details">
+                                                        <h4 className="item-name">{item.product_name}</h4>
+                                                        <div className="item-specs">
+                                                            {item.variant_name && item.variant_value && (
+                                                                <span className="item-variant">
+                                                                    {item.variant_name}: {item.variant_value}
+                                                                </span>
+                                                            )}
+                                                            <span className="item-qty">Qty: {item.quantity}</span>
+                                                            <span className="item-price">{formatPrice(item.unit_price)}</span>
+                                                        </div>
+                                                        <div className="item-footer">
+                                                            <div className="status-badge cancelled">
+                                                                <FiX className="status-icon" />
+                                                                <span>Cancelled</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
+                                    </div>
+                                )}
+
+                                {/* Fully Cancelled Orders */}
+                                {activeTab === 'cancelled' && order.status === 'Cancelled' && order.items?.length === 0 && (
+                                    <div className="fully-cancelled-notice">
+                                        <FiX className="cancelled-icon" />
+                                        <span>This order was fully cancelled</span>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
                 </div>
+            ) : (
+                <div className="no-orders-in-tab">
+                    <img 
+                        src="/empty-orders.svg" 
+                        alt="No orders" 
+                        className="empty-illustration" 
+                        onError={(e) => {
+                            e.target.src = '/default-empty.svg';
+                        }}
+                    />
+                    <h2>No {activeTab === 'active' ? 'Active' : activeTab === 'cancelled' ? 'Cancelled' : 'Delivered'} Orders</h2>
+                    <p>You don't have any {activeTab === 'active' ? 'active' : activeTab === 'cancelled' ? 'cancelled' : 'delivered'} orders</p>
+                </div>
             )}
 
+            {/* Pagination */}
             <div className="pagination-controls">
                 <button 
-                    onClick={handlePrevPage} 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
                     disabled={currentPage === 1}
                     className="pagination-btn prev"
                 >
                     <FiChevronLeft className="pagination-icon" />
                     Previous
                 </button>
-                <span className="page-indicator">Page {currentPage}</span>
+                <span className="page-indicator">Page {currentPage} of {totalPages}</span>
                 <button 
-                    onClick={handleNextPage} 
-                    disabled={orders.length < ordersPerPage}
+                    onClick={() => setCurrentPage(p => p + 1)} 
+                    disabled={currentPage >= totalPages || filteredOrders.length < ordersPerPage}
                     className="pagination-btn next"
                 >
                     Next

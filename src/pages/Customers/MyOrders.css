@@ -499,6 +499,90 @@ body {
 .error-message button:hover {
     background: var(--primary-light);
 }
+/* Tabs */
+.orders-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    color: #2a5bd7;
+    border-bottom-color: #2a5bd7;
+}
+
+/* Cancelled Orders */
+.order-card.cancelled {
+    opacity: 0.8;
+    background-color: #f9f9f9;
+    border-left: 4px solid #e74c3c;
+}
+
+.fully-cancelled-notice {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #fde8e8;
+    color: #e74c3c;
+    border-radius: 4px;
+    margin: 15px;
+}
+
+.fully-cancelled-notice .cancelled-icon {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.processing {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.shipped {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.delivered {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge .status-icon {
+    margin-right: 5px;
+}
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {

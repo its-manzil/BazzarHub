@@ -18,8 +18,6 @@ import ProductDetails from "./pages/ProductDetails";
 import ErrorPage from "./pages/ErrorPage"; 
 import Results from "./pages/Results";
 import CustomerProfile from "./pages/Customers/CustomerProfile";
-
-import Orders from "./pages/Admin/Orders/Orders";
 import ProductsList from "./pages/Admin/Products/ProductsList";
 import CustomersList from "./pages/Admin/CustomersList";
 import MyOrders from "./pages/Customers/MyOrders";

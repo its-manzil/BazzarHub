@@ -1090,7 +1090,7 @@ app.post('/api/orders', verifyToken, async (req, res) => {
         totalAmount,
         payment_method,
         JSON.stringify(shipping_address),
-        'processing'
+        'Pending'
       ]
     );
 
