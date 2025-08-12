@@ -1531,6 +1531,102 @@ app.put('/api/orders/:orderId/items/:itemId/cancel', verifyToken, async (req, re
     }
 });
 
+// Add this to your server.js
+// Add this to your server.js (remove verifyToken middleware)
+app.get('/api/customers', async (req, res) => {
+  try {
+    const [customers] = await db.query(`
+      SELECT 
+        c.id,
+        c.username,
+        c.email,
+        c.phone,
+        c.full_name,
+        c.profile_picture,
+        c.created_at,
+        COUNT(DISTINCT o.order_id) AS total_orders,
+        COALESCE(SUM(oi.quantity * oi.unit_price), 0.00) AS total_spent
+      FROM customers c
+      LEFT JOIN orders o ON c.id = o.user_id AND o.status != 'Cancelled'
+      LEFT JOIN order_items oi ON o.order_id = oi.order_id AND oi.status != 'Cancelled'
+      GROUP BY c.id
+      ORDER BY total_spent DESC
+    `);
+
+    res.json(customers);
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ message: 'Error fetching customers' });
+  }
+});
+
+// Get all products with variants
+app.get('/api/allProducts', async (req, res) => {
+  try {
+    const [products] = await db.query('SELECT * FROM products');
+    
+    for (let product of products) {
+      const [variants] = await db.query(
+        'SELECT * FROM product_variants WHERE product_id = ?',
+        [product.product_id]
+      );
+      product.variants = variants;
+    }
+    
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Error fetching products' });
+  }
+});
+
+// Update variant stock
+app.put('/api/variants/:variantId/stock', async (req, res) => {
+  try {
+    const { variantId } = req.params;
+    const { stock_quantity } = req.body;
+    
+    await db.query(
+      'UPDATE product_variants SET stock_quantity = ? WHERE variant_id = ?',
+      [stock_quantity, variantId]
+    );
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating stock:', error);
+    res.status(500).json({ message: 'Error updating stock' });
+  }
+});
+
+// Add new variant
+app.post('/api/allProducts/:productId/variants', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { variant_name, variant_value, marked_price, selling_price, stock_quantity } = req.body;
+    
+    if (parseFloat(selling_price) > parseFloat(marked_price)) {
+      return res.status(400).json({ message: 'Selling price must be ≤ marked price' });
+    }
+    
+    const [result] = await db.query(
+      `INSERT INTO product_variants 
+      (product_id, variant_name, variant_value, marked_price, selling_price, stock_quantity) 
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [productId, variant_name, variant_value, marked_price, selling_price, stock_quantity]
+    );
+    
+    const [newVariant] = await db.query(
+      'SELECT * FROM product_variants WHERE variant_id = ?',
+      [result.insertId]
+    );
+    
+    res.json(newVariant[0]);
+  } catch (error) {
+    console.error('Error adding variant:', error);
+    res.status(500).json({ message: 'Error adding variant' });
+  }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

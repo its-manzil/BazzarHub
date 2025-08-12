@@ -1,110 +1,169 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-:root {
-  --primary-color: #2d6cdf;
-  --secondary-color: #f4f6fa;
-  --accent-color: #ff9800;
-  --text-color: #333;
-  --white: #fff;
-}
-
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  margin: 0;
-  padding: 0;
-}
-
 .products-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: auto;
+  padding: 2rem;
 }
 
-.products-header {
-  margin-bottom: 20px;
+h1 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
 }
 
-.products-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 6px;
+.search-bar {
+  margin-bottom: 1.5rem;
 }
 
-.products-subtitle {
+.search-bar input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   font-size: 1rem;
-  color: #555;
 }
 
-.products-alert.error {
-  background-color: #ffdddd;
-  color: #a10000;
-  padding: 10px 15px;
-  margin-bottom: 20px;
-  border-radius: 6px;
-  border: 1px solid #a10000;
-}
-
-.products-table-wrapper {
-  overflow-x: auto;
+.products-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .products-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: var(--white);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-}
-
-.products-table th,
-.products-table td {
-  padding: 14px 18px;
-  border-bottom: 1px solid #eee;
-  text-align: left;
-  vertical-align: middle;
 }
 
 .products-table th {
-  background-color: var(--secondary-color);
+  background-color: #f8f9fa;
+  color: #495057;
+  text-align: left;
+  padding: 1rem;
   font-weight: 600;
-}
-
-/* Buttons */
-.btn-edit,
-.btn-delete {
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
   cursor: pointer;
+  user-select: none;
+}
+
+.products-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.products-table tr:last-child td {
+  border-bottom: none;
+}
+
+.edit-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-btn:hover {
+  background: #2980b9;
+}
+
+.edit-row {
+  background-color: #f8fafc;
+}
+
+.variant-edit-section {
+  padding: 1rem;
+}
+
+.variants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.variant-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.stock-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.stock-control input {
+  width: 60px;
+  padding: 0.25rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.add-variant-form {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.25rem;
   font-weight: 500;
-  margin-right: 8px;
-  transition: background-color 0.3s ease;
 }
 
-.btn-edit {
-  background-color: var(--primary-color);
-  color: var(--white);
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
-.btn-edit:hover {
-  background-color: #1d4fba;
+.add-variant-btn {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
 }
 
-.btn-delete {
-  background-color: #d9534f;
-  color: var(--white);
+.add-variant-btn:hover {
+  background: #219653;
 }
 
-.btn-delete:hover {
-  background-color: #b52e2e;
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
 }
 
-/* Responsive */
+.loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #e74c3c;
+}
+
 @media (max-width: 768px) {
-  .products-table th,
-  .products-table td {
-    padding: 10px 8px;
+  .products-table {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .variants-grid {
+    grid-template-columns: 1fr;
   }
 }

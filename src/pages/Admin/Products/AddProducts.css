@@ -1,6 +1,6 @@
 /* ====== BASE STYLES ====== */
 :root {
-  --nav-width: 260px;
+  --nav-width: 0px;
   --nav-width-collapsed: 70px;
   --header-height: 70px;
   --primary: #4361ee;

@@ -13,6 +13,8 @@ import {
   FiAlertCircle,
   FiPackage
 } from 'react-icons/fi';
+import Nav from '../Nav';
+import CustomerNav from './CustomerNav';
 
 const MyOrder = () => {
     const [orders, setOrders] = useState([]);
@@ -238,6 +240,9 @@ const MyOrder = () => {
     }
 
     return (
+      <>
+      <Nav/>
+      <CustomerNav/>
         <div className="my-orders-container">
             {notification.show && (
                 <div className={`notification ${notification.isError ? 'error' : ''}`}>
@@ -478,6 +483,7 @@ const MyOrder = () => {
                 </button>
             </div>
         </div>
+        </>
     );
 };
 
