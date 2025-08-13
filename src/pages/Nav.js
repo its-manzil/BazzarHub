@@ -4,6 +4,7 @@ import { CgProfile } from "react-icons/cg";
 import { MdContactPhone } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
 import "./Nav.css";
+import Chatbot from "./Admin/Chatbot";
 
 function Nav() {
   const { pathname } = useLocation();
@@ -17,6 +18,8 @@ function Nav() {
   ];
 
   return (
+    <>
+    <Chatbot/>
     <nav className="custom-nav-bar">
       <ul className="custom-nav-list">
         {navItems.map((item) => (
@@ -34,6 +37,7 @@ function Nav() {
         ))}
       </ul>
     </nav>
+    </>
   );
 }
 

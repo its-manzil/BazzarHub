@@ -112,8 +112,7 @@ const router = createBrowserRouter([
   {
     path: "AdminOrders",
     element: <AdminOrders/>
-  }
-  
+  },
 
 ]);
 

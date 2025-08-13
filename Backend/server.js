@@ -11,6 +11,7 @@ const crypto = require("crypto");
 const app = express();
 const port = 8099;
 
+
 // Generate a secure random secret key for JWT at startup
 const generateSecretKey = () => {
   return crypto.randomBytes(64).toString('hex');
@@ -1699,6 +1700,81 @@ app.put('/api/allOrders/:orderId/status', async (req, res) => {
   } catch (error) {
     console.error('Error updating order status:', error);
     res.status(500).json({ message: 'Error updating order status' });
+  }
+});
+
+// Chatbot endpoint
+// Chatbot endpoint with concise responses
+app.post('/api/chatbot', async (req, res) => {
+  try {
+    const { message, chatHistory = [] } = req.body;
+    
+    // Get product data from database
+    const [products] = await db.query(`
+      SELECT p.product_name, p.category, p.description, 
+             v.variant_name, v.variant_value, v.selling_price, v.stock_quantity
+      FROM products p
+      JOIN product_variants v ON p.product_id = v.product_id
+      WHERE v.stock_quantity > 0
+      ORDER BY p.category, p.product_name
+    `);
+
+    // Format products for the prompt
+    const productList = products.map(p => ({
+      name: p.product_name,
+      category: p.category,
+      variant: `${p.variant_name}: ${p.variant_value}`,
+      price: p.selling_price,
+      stock: p.stock_quantity,
+      description: p.description
+    }));
+
+    // Create prompt with context
+    const prompt = `
+      You are a helpful shopping assistant for BazarHub. Keep responses very short and concise (1-3 sentences max).
+      Always display prices in Nepalese Rupees (Rs.) format.
+      
+      Current product inventory:
+      ${JSON.stringify(productList, null, 2)}
+      
+      Chat history:
+      ${JSON.stringify(chatHistory, null, 2)}
+      
+      User message: "${message}"
+      
+      Respond concisely:
+      1. Answer directly without lengthy explanations
+      2. Suggest specific products when asked
+      3. Mention prices in Rs. only
+      4. Don't list all categories unless asked
+      5. Keep it friendly but very brief
+    `;
+
+    // Call Ollama API
+    const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: "llama3",
+        prompt: prompt,
+        stream: false,
+        options: {
+          temperature: 0.7,
+          num_predict: 100 // Limit response length
+        }
+      })
+    });
+
+    const ollamaData = await ollamaResponse.json();
+    
+    res.json({
+      response: ollamaData.response,
+      products: productList
+    });
+
+  } catch (error) {
+    console.error('Chatbot error:', error);
+    res.status(500).json({ error: 'Error processing chatbot request' });
   }
 });
 

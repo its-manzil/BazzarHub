@@ -29,10 +29,13 @@ function Home() {
   }, [goNext]);
 
   return (
-    <div className="main">
-      <Nav />
+    <>
+    <Nav />
       <Logo />
       <CartLogo />
+      
+    <div className="main">
+      
       <div className="slideshow-container">
         {slides.map((slide, index) => (
           <div
@@ -62,6 +65,7 @@ function Home() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

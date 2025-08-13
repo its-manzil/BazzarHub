@@ -13,6 +13,7 @@ import {
 import { Favorite, Share } from '@mui/icons-material';
 import axios from 'axios';
 import './store.css';
+import Chatbot from './Admin/Chatbot';
 
 const Store = () => {
   const [products, setProducts] = useState([]);
@@ -211,6 +212,7 @@ const Store = () => {
       <Nav />
       <Logo />
       <CartLogo />
+      <Chatbot/>
       
       <Box className="storejs-container">
         <Box className="storejs-filter-controls">
